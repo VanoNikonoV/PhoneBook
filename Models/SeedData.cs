@@ -3,6 +3,9 @@ using PhoneBook.Data;
 
 namespace PhoneBook.Models
 {
+    /// <summary>
+    /// Класс для наполнения данными БД
+    /// </summary>
     public class SeedData
     {
         public static void Initialize(IServiceProvider serviceProvider)

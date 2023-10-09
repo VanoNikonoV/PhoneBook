@@ -21,7 +21,7 @@ namespace PhoneBook.Models
         /// </summary>
         [Display(Name = "Отчество")]
         [RegularExpression(@"^[а-яА-Я''-'\s]{1,30}$")]
-        [Required]
+        [Required(ErrorMessage = "Не указано отчество")]
         public string MiddleName { get; set; }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace PhoneBook.Models
         /// </summary>
         [Display(Name = "Фамилия")]
         [RegularExpression(@"^[а-яА-Я''-'\s]{1,30}$")]
-        [Required]
+        [Required(ErrorMessage = "Не указано фамилия")]
         public string LastName { get; set; }
 
         /// <summary>
@@ -38,18 +38,20 @@ namespace PhoneBook.Models
         [Display(Name = "Номер телефона")]
         [Phone]
         [DataType(DataType.PhoneNumber)]
+        [Required(ErrorMessage = "Не заполенено поле номер телефона ")]
         public string Telefon { get; set; }
 
         /// <summary>
         /// Адрес
         /// </summary>
         [Display(Name = "Адрес")]
+        [Required(ErrorMessage = "Не заполенено поле адрес ")]
         public string Address { get; set; }
         /// <summary>
         /// Описание 
         /// </summary>
         [Display(Name = "Описание")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
   
     }
 }
