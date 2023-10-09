@@ -51,6 +51,7 @@ namespace PhoneBook.Models
         /// Описание 
         /// </summary>
         [Display(Name = "Описание")]
+        [StringLength(300)]
         public string? Description { get; set; }
   
     }
