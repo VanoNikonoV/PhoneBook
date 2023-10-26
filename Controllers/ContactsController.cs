@@ -1,38 +1,34 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PhoneBook.Data;
+using PhoneBook.Interfaces;
 using PhoneBook.Models;
 
 namespace PhoneBook.Controllers
 {
     public class ContactsController : Controller
     {
-        private readonly PhoneBookContext _context;
+        private readonly IContactData _context;
 
-        public ContactsController(PhoneBookContext context)
+        public ContactsController(IContactData context)
         {
             _context = context;
         }
 
         /// <summary>
-        /// Метод-GET, отображает все контакты в усеченном виде (страница по умолчанию см. Program)
+        /// Метод-GET, получает все контакты из webApi, есть возможность фильрации по фамилии
         /// </summary>
         /// <param name="searchString">строка для параметр фильта по фамилии</param>
         /// <returns>IActionResult</returns>
-        public async Task<IActionResult> Index(string searchString)
+        public IActionResult Index(string searchString)
         {
-            if (_context.Contact == null)
-            {
-                return Problem("Проблема с базой данных!");
-            }
-
-            var contactFiltr = from contact in _context.Contact select contact;
+            var contactFiltr =  _context.GetAllContact();
 
             if (!String.IsNullOrEmpty(searchString))
             {
                 contactFiltr = contactFiltr.Where(s => s.LastName!.Contains(searchString));
             }
-            return View(await contactFiltr.ToListAsync());
+            return View(contactFiltr);
         }
 
         /// <summary>
@@ -40,20 +36,14 @@ namespace PhoneBook.Controllers
         /// </summary>
         /// <param name="id">параметр для поиска контакта</param>
         /// <returns>Task<IActionResult></returns>
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int? id)
         {
-            if (id == null || _context.Contact == null)
+            Contact contact = _context.GetContact(id);
+
+            if (id == null || contact == null)
             {
                 return NotFound();
             }
-
-            var contact = await _context.Contact
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (contact == null)
-            {
-                return NotFound();
-            }
-
             return View(contact);
         }
 
@@ -61,11 +51,8 @@ namespace PhoneBook.Controllers
         /// Метод-GET для прехода на страницу с формой для нового контакта
         /// </summary>
         /// <returns>IActionResult</returns>
-        public IActionResult Create()
-        {
-            return View();
-        }
-
+        public IActionResult Create() => View();
+ 
         /// <summary>
         /// Метод-POST для валидации данных и добавления контакта в базу данных
         /// В случае ошибок в модели - вернет ту же страницу
@@ -74,12 +61,12 @@ namespace PhoneBook.Controllers
         /// <returns>Task<IActionResult></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] Contact contact)
+        public IActionResult Create([Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] Contact contact)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(contact);
-                await _context.SaveChangesAsync();
+                _context.CreateContact(contact);
+                
                 return RedirectToAction(nameof(Index));
             }
             return View(contact);
@@ -92,13 +79,9 @@ namespace PhoneBook.Controllers
         /// <returns>Task<IActionResult></returns>
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Contact == null)
-            {
-                return NotFound();
-            }
+            Contact contact = _context.GetContact(id);
 
-            var contact = await _context.Contact.FindAsync(id);
-            if (contact == null)
+            if (id == null || contact == null)
             {
                 return NotFound();
             }
@@ -124,19 +107,12 @@ namespace PhoneBook.Controllers
             {
                 try
                 {
-                    _context.Update(contact);
-                    await _context.SaveChangesAsync();
+                    _context.UpdateContact(id, contact);
+  
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ContactExists(contact.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        return Problem("Этот контакт сейчас кто-то редактирует, попробуйте позже");
-                    }
+                    throw new Exception("это уже совсем другая история");
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -150,15 +126,9 @@ namespace PhoneBook.Controllers
         /// <returns>Task<IActionResult></returns>
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Contact == null)
-            {
-                return NotFound();
-            }
+            Contact contact = _context.GetContact(id);
 
-            var contact = await _context.Contact
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (contact == null)
+            if (id == null || contact == null)
             {
                 return NotFound();
             }
@@ -175,17 +145,8 @@ namespace PhoneBook.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Contact == null)
-            {
-                return Problem("Проблема с базой данных!");
-            }
-            var contact = await _context.Contact.FindAsync(id);
-            if (contact != null)
-            {
-                _context.Contact.Remove(contact);
-            }
-            
-            await _context.SaveChangesAsync();
+            _context.DeleteContact(id);
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -193,14 +154,6 @@ namespace PhoneBook.Controllers
         /// Метод-GET для отбражения страницы с информацией о приложении
         /// </summary>
         /// <returns></returns>
-        public IActionResult About()
-        {
-            return View();
-        }
-
-        private bool ContactExists(int id)
-        {
-          return (_context.Contact?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
+        public IActionResult About() => View();
     }
 }
