@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using PhoneBook.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PhoneBook.Data;
 using PhoneBook.Interfaces;
-using PhoneBook.Models;
 
 namespace PhoneBook.Controllers
 {
@@ -22,13 +21,17 @@ namespace PhoneBook.Controllers
         /// <returns>IActionResult</returns>
         public IActionResult Index(string searchString)
         {
-            var contactFiltr =  _context.GetAllContact();
-
-            if (!String.IsNullOrEmpty(searchString))
+            try
             {
-                contactFiltr = contactFiltr.Where(s => s.LastName!.Contains(searchString));
+                var contactFiltr = _context.GetAllContact();
+
+                if (!String.IsNullOrEmpty(searchString))
+                {
+                    contactFiltr = contactFiltr.Where(s => s.LastName!.Contains(searchString));
+                }
+                return View(contactFiltr);
             }
-            return View(contactFiltr);
+            catch (Exception ex)  { return Problem(ex.Message); }
         }
 
         /// <summary>

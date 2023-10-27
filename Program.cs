@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddTransient<IContactData, ContactDataApi>();
 
 builder.Services.AddControllersWithViews();
+    //builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
@@ -24,5 +25,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Contacts}/{action=Index}/{id?}");
+
+    //app.MapRazorPages();
 
 app.Run();

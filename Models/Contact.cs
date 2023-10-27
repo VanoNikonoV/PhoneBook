@@ -2,11 +2,12 @@
 
 namespace PhoneBook.Models
 {
-    public class Contact
+    public class Contact:IContact
     {
         /// <summary>
         /// Идентификатор контакта
         /// </summary>
+        [Display(Name = "№")]
         public int Id { get; set; }
         /// <summary>
         /// Имя
