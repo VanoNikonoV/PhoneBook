@@ -27,25 +27,36 @@ var connectionString = builder.Configuration.GetConnectionString("ApplicationDbC
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => 
+builder.Services.AddTransient<IContactData, ContactDataApi>();
+
+builder.Services.AddControllersWithViews();
+
+#region Аутификация и авторизация
+
+builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>(); //
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.Configure<IdentityOptions>(option =>
+{
+    option.Password.RequireUppercase = false;
+});
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    // конфигурация Cookie с целью использования их для хранения авторизации
+    options.Cookie.HttpOnly = true;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+    options.SlidingExpiration = true;
+});
 //builder.Services.AddAuthorization(options =>
 //{
 //    options.AddPolicy(Constants.Policies.RequireAdmin, policy => policy.RequireRole(Constants.Roles.Administrator));
 //    options.AddPolicy(Constants.Policies.RequireManager, policy => policy.RequireRole(Constants.Roles.Manager));
 //});
 
-builder.Services.AddTransient<IContactData, ContactDataApi>();
-
-builder.Services.AddControllersWithViews();
-
-builder.Services.Configure<IdentityOptions>(option =>
-{
-    option.Password.RequireUppercase = false;
-});
+#endregion
 
 var app = builder.Build();
 
