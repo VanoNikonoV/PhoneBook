@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PhoneBook.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PhoneBook.Controllers
 {
@@ -19,6 +20,7 @@ namespace PhoneBook.Controllers
         /// </summary>
         /// <param name="searchString">строка для параметр фильта по фамилии</param>
         /// <returns>IActionResult</returns>
+        [AllowAnonymous]
         public IActionResult Index(string searchString)
         {
             try
@@ -39,9 +41,10 @@ namespace PhoneBook.Controllers
         /// </summary>
         /// <param name="id">параметр для поиска контакта</param>
         /// <returns>Task<IActionResult></returns>
+        [Authorize]
         public IActionResult Details(int? id)
         {
-            Contact contact = _context.GetContact(id);
+            Contact contact = _context.GetContact(id).Result;
 
             if (id == null || contact == null)
             {
@@ -54,6 +57,7 @@ namespace PhoneBook.Controllers
         /// Метод-GET для прехода на страницу с формой для нового контакта
         /// </summary>
         /// <returns>IActionResult</returns>
+        [Authorize]
         public IActionResult Create() => View();
  
         /// <summary>
@@ -64,6 +68,7 @@ namespace PhoneBook.Controllers
         /// <returns>Task<IActionResult></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public IActionResult Create([Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] Contact contact)
         {
             if (ModelState.IsValid)
@@ -80,9 +85,10 @@ namespace PhoneBook.Controllers
         /// </summary>
         /// <param name="id">параметр для поиска контакта</param>
         /// <returns>Task<IActionResult></returns>
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
-            Contact contact = _context.GetContact(id);
+            Contact contact = _context.GetContact(id).Result;
 
             if (id == null || contact == null)
             {
@@ -99,6 +105,7 @@ namespace PhoneBook.Controllers
         /// <returns>Task<IActionResult></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] Contact contact)
         {
             if (id != contact.Id)
@@ -127,9 +134,10 @@ namespace PhoneBook.Controllers
         /// </summary>
         /// <param name="id">параметр для поиска контакта</param>
         /// <returns>Task<IActionResult></returns>
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
-            Contact contact = _context.GetContact(id);
+            Contact contact = _context.GetContact(id).Result;
 
             if (id == null || contact == null)
             {
@@ -146,6 +154,7 @@ namespace PhoneBook.Controllers
         /// <returns>Task<IActionResult></returns>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             _context.DeleteContact(id);
@@ -157,6 +166,7 @@ namespace PhoneBook.Controllers
         /// Метод-GET для отбражения страницы с информацией о приложении
         /// </summary>
         /// <returns></returns>
+        [AllowAnonymous]
         public IActionResult About() => View();
     }
 }

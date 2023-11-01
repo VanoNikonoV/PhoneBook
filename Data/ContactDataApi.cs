@@ -3,6 +3,9 @@ using Newtonsoft.Json;
 using PhoneBook.Models;
 using System.Text;
 using NuGet.Common;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
+using static System.Net.WebRequestMethods;
+using System.Diagnostics;
 
 namespace PhoneBook.Data
 {
@@ -13,11 +16,12 @@ namespace PhoneBook.Data
         public ContactDataApi()
         {
             httpClient = new HttpClient();
+            httpClient.BaseAddress = new Uri(@"https://a21773-e6ea.c.d-f.pw/values/");
         }
 
         public void DeleteContact(int id)
         {
-            string url = @"https://localhost:7169/api/values/id?id=" + $"{id}";
+            string url = @"https://a21773-e6ea.c.d-f.pw/values/id?id=" + $"{id}";
 
             var r = httpClient.DeleteAsync(requestUri: url).Result;
         }
@@ -28,7 +32,7 @@ namespace PhoneBook.Data
         /// <returns></returns>
         public IEnumerable<Contact> GetAllContact()
         {
-            string url = @"https://localhost:7169/api/values";
+            string url = @"https://a21773-e6ea.c.d-f.pw/values/";
 
             string json = httpClient.GetStringAsync(url).Result;
 
@@ -40,39 +44,61 @@ namespace PhoneBook.Data
         /// </summary>
         /// <param name="id">индентификатор контакта</param>
         /// <returns>Десерилозованный контакт</returns>
-        public Contact GetContact(int? id) 
+        public async Task<Contact> GetContact(int? id) 
         {
-            string url = @"https://localhost:7169/api/values/id?id=" + $"{id}";
+            string url = @"https://a21773-e6ea.c.d-f.pw/values/id?id=" + $"{id}";
 
-            string json = httpClient.GetStringAsync(url).Result;
+            string json = await httpClient.GetStringAsync(url);
 
             return JsonConvert.DeserializeObject<Contact>(json);
         }
 
-        public void UpdateContact(int id, Contact contact)
+        public async void UpdateContact(int id, Contact contact)
         {
-            string url = @"https://localhost:7169/api/values/id?id=" + $"{id}";
+            string url = @"https://a21773-e6ea.c.d-f.pw/values/id?id=" + $"{id}";
 
-            var r = httpClient.PutAsync(
-                requestUri: url,
-                content: new StringContent(JsonConvert.SerializeObject(contact), Encoding.UTF8,
-                mediaType: "application/json")
-                ).Result;
+            string serelizeContact = JsonConvert.SerializeObject(contact);
+
+            try
+            {
+               var response = await httpClient.PutAsync(
+               requestUri: url,
+               content: new StringContent(serelizeContact, Encoding.UTF8,
+               mediaType: "application/json"));
+
+               Debug.Write($"\t\t\t" + response.StatusCode);
+            }
+
+            catch (HttpRequestException http) { Debug.WriteLine(http.Message); }
+
+            catch (Exception ex) { Debug.WriteLine(ex.Message); }
+           
         }
 
         /// <summary>
         /// Добавляет контакт в базу данных, используя web API
         /// </summary>
         /// <param name="newContact"></param>
-        public void CreateContact(Contact newContact)
+        public async void CreateContact(Contact newContact)
         {
-            string url = @"https://localhost:7169/api/values";
+            string url = @"https://a21773-e6ea.c.d-f.pw/values";
 
-            var r = httpClient.PostAsync(
+            string serelizeContact = JsonConvert.SerializeObject(newContact);
+
+            try
+            {
+                var response = await httpClient.PostAsync(
                 requestUri: url,
-                content: new StringContent(JsonConvert.SerializeObject(newContact), Encoding.UTF8,
-                mediaType: "application/json")
-                ).Result;
+                content: new StringContent(serelizeContact, Encoding.UTF8,
+                mediaType: "application/json"));
+
+                Debug.Write($"\t\t\t" + response.EnsureSuccessStatusCode());
+            }
+            
+            catch (HttpRequestException http) { Debug.WriteLine(http.Message); }
+
+            catch (Exception http) { Debug.WriteLine(http.Message); }
+
         }
     }
 }
