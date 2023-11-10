@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PhoneBook.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using PhoneBook.Areas.Identity.Data;
-using Microsoft.VisualBasic;
+
     /*
     Что нужно сделать
     Расширьте Web-приложение из прошлого домашнего задания и подключите к нему модуль авторизации. 
@@ -20,6 +20,7 @@ using Microsoft.VisualBasic;
     Реализованы все возможности пользователей для каждой роли, описанной выше.
     Использована база данных.
     */
+
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("ApplicationDbContextConnection") 
@@ -50,11 +51,11 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
     options.SlidingExpiration = true;
 });
-//builder.Services.AddAuthorization(options =>
-//{
-//    options.AddPolicy(Constants.Policies.RequireAdmin, policy => policy.RequireRole(Constants.Roles.Administrator));
-//    options.AddPolicy(Constants.Policies.RequireManager, policy => policy.RequireRole(Constants.Roles.Manager));
-//});
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(PhoneBook.Core.Constants.Policies.RequireAdmin, policy => policy.RequireRole(PhoneBook.Core.Constants.Roles.Administrator));
+    options.AddPolicy(PhoneBook.Core.Constants.Policies.RequireManager, policy => policy.RequireRole(PhoneBook.Core.Constants.Roles.Manager));
+});
 
 #endregion
 
