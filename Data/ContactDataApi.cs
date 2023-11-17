@@ -9,21 +9,28 @@ using System.Diagnostics;
 
 namespace PhoneBook.Data
 {
+    //https://v2.d-f.pw/app/create-application
+
     public class ContactDataApi : IContactData
     {
-        private HttpClient httpClient { get; set; }
+        private static readonly HttpClient httpClient = new() 
+        { 
+            BaseAddress = new Uri("https://a21773-e6ea.c.d-f.pw/") 
+        };
 
-        public ContactDataApi()
+        public ContactDataApi() {}
+
+        public async void DeleteContact(int id)
         {
-            httpClient = new HttpClient();
-            httpClient.BaseAddress = new Uri(@"https://a21773-e6ea.c.d-f.pw/values/");
-        }
+            string url = $"id?id={id}";
 
-        public void DeleteContact(int id)
-        {
-            string url = @"https://a21773-e6ea.c.d-f.pw/values/id?id=" + $"{id}";
+            using HttpResponseMessage response = await httpClient.DeleteAsync(url);
 
-            var r = httpClient.DeleteAsync(requestUri: url).Result;
+            response.EnsureSuccessStatusCode();
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+
+            Console.WriteLine($"{jsonResponse}\n");
         }
 
         /// <summary>
@@ -100,5 +107,9 @@ namespace PhoneBook.Data
             catch (Exception http) { Debug.WriteLine(http.Message); }
 
         }
+
+        
+
+
     }
 }

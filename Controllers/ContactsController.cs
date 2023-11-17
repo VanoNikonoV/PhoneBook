@@ -42,8 +42,8 @@ namespace PhoneBook.Controllers
         /// </summary>
         /// <param name="id">параметр для поиска контакта</param>
         /// <returns>Task<IActionResult></returns>
-        [Authorize(Policy = Constants.Policies.RequireManager)]
-        [Authorize(Policy = Constants.Policies.RequireAdmin)]
+        //[Authorize(Policy = Constants.Policies.RequireManager)]
+        //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public IActionResult Details(int? id)
         {
             Contact contact = _context.GetContact(id).Result;
@@ -59,8 +59,8 @@ namespace PhoneBook.Controllers
         /// Метод-GET для прехода на страницу с формой для нового контакта
         /// </summary>
         /// <returns>IActionResult</returns>
-        [Authorize(Policy = Constants.Policies.RequireManager)]
-        [Authorize(Policy = Constants.Policies.RequireAdmin)]
+        //[Authorize(Policy = Constants.Policies.RequireManager)]
+        //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public IActionResult Create() => View();
  
         /// <summary>
@@ -71,8 +71,8 @@ namespace PhoneBook.Controllers
         /// <returns>Task<IActionResult></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = Constants.Policies.RequireManager)]
-        [Authorize(Policy = Constants.Policies.RequireAdmin)]
+        //[Authorize(Policy = Constants.Policies.RequireManager)]
+        //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public IActionResult Create([Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] Contact contact)
         {
             if (ModelState.IsValid)
@@ -89,7 +89,7 @@ namespace PhoneBook.Controllers
         /// </summary>
         /// <param name="id">параметр для поиска контакта</param>
         /// <returns>Task<IActionResult></returns>
-        [Authorize(Policy = Constants.Policies.RequireAdmin)]
+        //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public async Task<IActionResult> Edit(int? id)
         {
             Contact contact = _context.GetContact(id).Result;
@@ -109,7 +109,7 @@ namespace PhoneBook.Controllers
         /// <returns>Task<IActionResult></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = Constants.Policies.RequireAdmin)]
+        //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] Contact contact)
         {
             if (id != contact.Id)
@@ -138,7 +138,7 @@ namespace PhoneBook.Controllers
         /// </summary>
         /// <param name="id">параметр для поиска контакта</param>
         /// <returns>Task<IActionResult></returns>
-        [Authorize(Policy = Constants.Policies.RequireAdmin)]
+        //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public async Task<IActionResult> Delete(int? id)
         {
             Contact contact = _context.GetContact(id).Result;
@@ -158,7 +158,7 @@ namespace PhoneBook.Controllers
         /// <returns>Task<IActionResult></returns>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = Constants.Policies.RequireAdmin)]
+        //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             _context.DeleteContact(id);

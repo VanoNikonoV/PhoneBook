@@ -22,6 +22,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddTransient<IContactData, ContactDataApi>();
 
+builder.Services.AddTransient<IAuthenticationData, AuthenticationDataApi>();
+
 builder.Services.AddControllersWithViews();
 
 

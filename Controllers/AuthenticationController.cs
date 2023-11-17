@@ -1,10 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PhoneBook.Interfaces;
 using PhoneBook.Models;
 
 namespace PhoneBook.Controllers
 {
     public class AuthenticationController : Controller
     {
+        private readonly IAuthenticationData _context;
+
+        public AuthenticationController(IAuthenticationData context)
+        {
+            _context = context;
+        }
+
         public IActionResult Login()
         {
             return View();
@@ -13,7 +21,9 @@ namespace PhoneBook.Controllers
         [HttpPost]
         public IActionResult Login(User request)
         {
-            return View(request);
+            string token = _context.Login(request).Result;
+
+            return Redirect(@"\Contacts\Index");
         }
 
         public IActionResult Register() 
