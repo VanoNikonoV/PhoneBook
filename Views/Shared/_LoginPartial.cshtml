@@ -1,18 +1,13 @@
-﻿@using Microsoft.AspNetCore.Identity
-@using PhoneBook.Areas.Identity.Data
-
-@inject SignInManager<ApplicationUser> SignInManager
-@inject UserManager<ApplicationUser> UserManager
+﻿
+@model PhoneBook.Models.User
 
 
-@if (SignInManager.IsSignedIn(User))
+
+@if (false)
 {
-    ApplicationUser user = await UserManager.GetUserAsync(User);
-    var fullName = $"{user.FirstName} {user.LastName}";
-
         <div class="text-end">
-        <a id="manage" class="btn btn-outline-light me-2" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Здравствуй, @fullName!</a>
-            <form id="logoutForm" class="btn btn-warning" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Contacts", new { area = "" })">
+        <a id="manage" class="btn btn-outline-light me-2" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Здравствуй, asp-for="Email"</a>
+        <form id="logoutForm" class="btn btn-warning" asp-area="Identity" asp-page="/Authentication/Logout" asp-route-returnUrl="@Url.Action("Index", "Contacts", new { area = "" })">
                 <button id="logout" type="submit" class="nav-link btn btn-link text">Выход</button>
             </form>
         </div>
@@ -20,8 +15,8 @@
 else
 {
     <div class="text-end">
-            <a class="btn btn-warning" id="register" asp-area="Identity" asp-page="/Account/Register">Регистрация</a>
-            <a class="btn btn-outline-light me-2" id="login" asp-area="Identity" asp-page="/Account/Login">Логин</a>
+        <a class="btn btn-warning" id="register" asp-area="Identity" asp-page="/Authentication/Register">Регистрация</a>
+        <a class="btn btn-outline-light me-2" id="login" asp-area="Identity" asp-page="/Authentication/Login">Логин</a>
     </div>
 
     @* @UserManager.GetUserName(User) *@
