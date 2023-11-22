@@ -42,7 +42,7 @@ namespace PhoneBook.Data
         /// <returns></returns>
         public IEnumerable<Contact> GetAllContact()
         {
-            string url = $"values/";
+            string url = $"values";
 
             string json = httpClient.GetStringAsync(url).Result;
 
