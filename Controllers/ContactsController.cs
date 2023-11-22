@@ -70,7 +70,7 @@ namespace PhoneBook.Controllers
         /// <param name="contact">модель данных</param>
         /// <returns>Task<IActionResult></returns>
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         //[Authorize(Policy = Constants.Policies.RequireManager)]
         //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public IActionResult Create([Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] Contact contact)
@@ -108,7 +108,7 @@ namespace PhoneBook.Controllers
         /// <param name="contact">модель данных</param>
         /// <returns>Task<IActionResult></returns>
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] Contact contact)
         {

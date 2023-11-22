@@ -13,21 +13,24 @@ namespace PhoneBook.Data
 
         private static readonly HttpClient httpClient = new()
         {
-            BaseAddress = new Uri("https://a21773-e6ea.c.d-f.pw/")
+            //BaseAddress = new Uri("https://a22219-3b93.g.d-f.pw/")
+            BaseAddress = new Uri("https://localhost:7169/")
         };
         
-        public async Task<string> Login(User user)
+        public async Task<string> Login(RequestLogin request)
         {
-            string url = @"https://a21773-e6ea.c.d-f.pw/authentication/login";
-
-            string serelizeContact = JsonConvert.SerializeObject(user);
+            string serelizeContact = JsonConvert.SerializeObject(request);
 
             var response = await httpClient.PostAsync(
-               requestUri: url,
+               requestUri: "authentication/login",
                content: new StringContent(serelizeContact, Encoding.UTF8,
                mediaType: "application/json"));
 
-            return "token";
+            var d = response.EnsureSuccessStatusCode();
+
+            var token = response.Content.ReadAsStringAsync();
+
+            return token.Result;
 
         }
     }

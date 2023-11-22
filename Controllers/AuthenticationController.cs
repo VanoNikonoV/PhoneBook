@@ -8,6 +8,8 @@ namespace PhoneBook.Controllers
     {
         private readonly IAuthenticationData _context;
 
+        public string Token { get; set; } = string.Empty;
+
         public AuthenticationController(IAuthenticationData context)
         {
             _context = context;
@@ -19,9 +21,9 @@ namespace PhoneBook.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(User request)
+        public IActionResult Login(RequestLogin request)
         {
-            string token = _context.Login(request).Result;
+            AccessForToken.Token = _context.Login(request).Result;
 
             return Redirect(@"\Contacts\Index");
         }

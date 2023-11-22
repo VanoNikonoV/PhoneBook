@@ -2,9 +2,6 @@
 using Newtonsoft.Json;
 using PhoneBook.Models;
 using System.Text;
-using NuGet.Common;
-using Microsoft.DotNet.Scaffolding.Shared.Messaging;
-using static System.Net.WebRequestMethods;
 using System.Diagnostics;
 
 namespace PhoneBook.Data
@@ -15,16 +12,22 @@ namespace PhoneBook.Data
     {
         private static readonly HttpClient httpClient = new() 
         { 
-            BaseAddress = new Uri("https://a21773-e6ea.c.d-f.pw/") 
+            //BaseAddress = new Uri("https://a22219-3b93.g.d-f.pw/"),
+            BaseAddress = new Uri("https://localhost:7169/"),
         };
 
-        public ContactDataApi() {}
+        public ContactDataApi() 
+        {
+            //httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            //httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", accessToken);
+        }
 
         public async void DeleteContact(int id)
         {
-            string url = $"id?id={id}";
+            string url = $"values/id?id={id}";
 
             using HttpResponseMessage response = await httpClient.DeleteAsync(url);
+
 
             response.EnsureSuccessStatusCode();
 
@@ -39,7 +42,7 @@ namespace PhoneBook.Data
         /// <returns></returns>
         public IEnumerable<Contact> GetAllContact()
         {
-            string url = @"https://a21773-e6ea.c.d-f.pw/values/";
+            string url = $"values/";
 
             string json = httpClient.GetStringAsync(url).Result;
 
@@ -53,7 +56,10 @@ namespace PhoneBook.Data
         /// <returns>Десерилозованный контакт</returns>
         public async Task<Contact> GetContact(int? id) 
         {
-            string url = @"https://a21773-e6ea.c.d-f.pw/values/id?id=" + $"{id}";
+            string url = $"values/id?id=" + $"{id}";
+
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + AccessForToken.Token);
 
             string json = await httpClient.GetStringAsync(url);
 
@@ -62,7 +68,7 @@ namespace PhoneBook.Data
 
         public async void UpdateContact(int id, Contact contact)
         {
-            string url = @"https://a21773-e6ea.c.d-f.pw/values/id?id=" + $"{id}";
+            string url = $"values/id?id=" + $"{id}";
 
             string serelizeContact = JsonConvert.SerializeObject(contact);
 
@@ -88,7 +94,7 @@ namespace PhoneBook.Data
         /// <param name="newContact"></param>
         public async void CreateContact(Contact newContact)
         {
-            string url = @"https://a21773-e6ea.c.d-f.pw/values";
+            string url = $"values";
 
             string serelizeContact = JsonConvert.SerializeObject(newContact);
 

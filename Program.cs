@@ -42,6 +42,4 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Contacts}/{action=Index}/{id?}");
 
-
-
 app.Run();
