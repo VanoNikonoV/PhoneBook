@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Azure.Core;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Newtonsoft.Json;
 using PhoneBook.Interfaces;
 using PhoneBook.Models;
 using System.Net.Http;
@@ -15,7 +17,6 @@ namespace PhoneBook.Data
         private static readonly HttpClient httpClient = new()
         {
             BaseAddress = new Uri("https://a22273-3287.b.d-f.pw/") 
-            //BaseAddress = new Uri("https://localhost:7169/")
         };
         
         public async Task<string> Login(RequestLogin request)
@@ -31,9 +32,9 @@ namespace PhoneBook.Data
             {
                 response.EnsureSuccessStatusCode();
 
-                AccessForToken.Token = response.Content.ReadAsStringAsync().Result;
+                string  token = response.Content.ReadAsStringAsync().Result;
 
-                return "Вы успехно вошли!";
+                return token;
 
             }
             catch (HttpRequestException httpEx)
@@ -56,6 +57,34 @@ namespace PhoneBook.Data
 
             //return "неполучилось";
             //var d = response.EnsureSuccessStatusCode();
+        }
+
+        public async Task Register(User user)
+        {
+            UserDto userDto = new UserDto();
+
+            userDto.FirstName = user.FirstName;
+            userDto.LastName = user.LastName;
+            userDto.Password = user.Password;
+            userDto.Email = user.Email;
+
+            string serelizeUser = JsonConvert.SerializeObject(userDto);
+
+            var response = await httpClient.PostAsync(
+               requestUri: "authentication/register",
+               content: new StringContent(serelizeUser, Encoding.UTF8,
+               mediaType: "application/json"));
+
+            try
+            {
+                response.EnsureSuccessStatusCode();
+
+            }
+            catch (HttpRequestException httpEx)
+            {
+               
+            }
+
         }
     }
 }

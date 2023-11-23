@@ -4,7 +4,6 @@ namespace PhoneBook.Models
 {
     public class User
     {
-        public int Id { get; set; }
         public string FirstName { get; set; } = string.Empty;
 
         public string LastName { get; set; } = string.Empty;
@@ -14,9 +13,5 @@ namespace PhoneBook.Models
         public string Password{ get; set; } = string.Empty;
 
         public string ConfirmPassword {  get; set; } = string.Empty;
-
-        public int? RoleId { get; set; }
-
-        public string ReturnUrl { get; set; }
     }
 }
