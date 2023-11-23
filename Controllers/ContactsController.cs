@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using PhoneBook.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using PhoneBook.Core;
+using System.Net.Http;
 
 namespace PhoneBook.Controllers
 {

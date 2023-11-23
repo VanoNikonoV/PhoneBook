@@ -11,23 +11,17 @@ namespace PhoneBook.Data
     public class ContactDataApi : IContactData
     {
         private static readonly HttpClient httpClient = new() 
-        { 
-            //BaseAddress = new Uri("https://a22219-3b93.g.d-f.pw/"),
-            BaseAddress = new Uri("https://localhost:7169/"),
+        {
+            BaseAddress = new Uri("https://a22273-3287.b.d-f.pw/"),
         };
 
-        public ContactDataApi() 
-        {
-            //httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            //httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", accessToken);
-        }
+        public ContactDataApi() {  }
 
         public async void DeleteContact(int id)
         {
             string url = $"values/id?id={id}";
 
             using HttpResponseMessage response = await httpClient.DeleteAsync(url);
-
 
             response.EnsureSuccessStatusCode();
 
@@ -59,11 +53,19 @@ namespace PhoneBook.Data
             string url = $"values/id?id=" + $"{id}";
 
             httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + AccessForToken.Token);
+            httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
 
-            string json = await httpClient.GetStringAsync(url);
+            try
+            {
+                string json = await httpClient.GetStringAsync(url);
+                return JsonConvert.DeserializeObject<Contact>(json);
+            }
+            catch (Exception ex) 
+            {
+              Debug.WriteLine( ex.Message);
+            }
 
-            return JsonConvert.DeserializeObject<Contact>(json);
+            return new Contact();
         }
 
         public async void UpdateContact(int id, Contact contact)
@@ -113,9 +115,6 @@ namespace PhoneBook.Data
             catch (Exception http) { Debug.WriteLine(http.Message); }
 
         }
-
-        
-
 
     }
 }

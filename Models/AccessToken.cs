@@ -2,6 +2,6 @@
 {
     public static class AccessForToken
     {
-        public static string Token { get; set; }
+        public static string Token { get; set; } = string.Empty;
     }
 }
