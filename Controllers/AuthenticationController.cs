@@ -26,11 +26,14 @@ namespace PhoneBook.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(RequestLogin request)
+        public async Task<IActionResult> LoginAsync(RequestLogin request)
         {
-            _login.Token = _context.Login(request).Result;
+            var token = await _context.Login(request);
+
+            HttpContext.Session.SetString("JWTtoken", token);
+
             _login.Email = request.Email;
-            _login.Password = request.Password;
+            _login.IsToken = true;
 
             return Redirect(@"\Contacts\Index");
         }
@@ -55,7 +58,7 @@ namespace PhoneBook.Controllers
 
         public IActionResult Logout() 
         {
-            _login.Token = string.Empty;
+            HttpContext.Session?.Clear();
 
             return Redirect(@"\Contacts\Index");
         }

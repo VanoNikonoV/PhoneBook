@@ -23,7 +23,7 @@
                     <li><a class="nav-link px-2 text-white" asp-controller="Contacts" asp-action="About">О приложении</a></li>
                 </ul>
 
-                @if (Login.Token != string.Empty)
+                @if (Login.IsToken)
                 {
                     var fullName = $"{Login.Email}";
                         <form method="get">
@@ -31,7 +31,7 @@
                             <button asp-controller="Authentication" asp-action="Logout" class="btn btn-outline-light me-2">Выход</button>
                         </form>
                 }
-                else if (Login.Token == string.Empty)
+                else if (!Login.IsToken)
                 {
                     <form method="get">
                         <button asp-controller="Authentication" asp-action="Login" class="btn btn-outline-light me-2">Логин</button>

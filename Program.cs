@@ -29,12 +29,29 @@ builder.Services.AddSingleton<IRequestLogin, RequestLogin>();
 
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddSession(opions =>
+{
+    opions.IdleTimeout = TimeSpan.FromMinutes(60);
+});
 
 var app = builder.Build();
 
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
+
+app.UseSession();
+
+app.Use(async (context, next) =>
+{
+    var JWTtoken = context.Session.GetString("JWTtoken");
+
+    if (!string.IsNullOrEmpty(JWTtoken))
+    {
+        context.Response.Headers.Add("Authorization", "bearer " + JWTtoken);
+    }
+    await next();
+});
 
 app.UseRouting();
 

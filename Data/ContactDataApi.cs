@@ -15,7 +15,7 @@ namespace PhoneBook.Data
             BaseAddress = new Uri("https://a22273-3287.b.d-f.pw/"),
         };
 
-        public ContactDataApi() {  }
+        public ContactDataApi() { }
 
         public async void DeleteContact(int id)
         {
@@ -34,7 +34,7 @@ namespace PhoneBook.Data
         /// Получает все контаты из базы даных, использую web API
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Contact> GetAllContact()
+        public IEnumerable<IContact> GetAllContact()
         {
             string url = $"values";
 
@@ -48,27 +48,34 @@ namespace PhoneBook.Data
         /// </summary>
         /// <param name="id">индентификатор контакта</param>
         /// <returns>Десерилозованный контакт</returns>
-        public async Task<Contact> GetContact(int? id) 
+        public async Task<IContact> GetContact(int? id) 
         {
-            string url = $"values/id?id=" + $"{id}";
-
-            httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
-
+            
+            //httpClient.DefaultRequestHeaders.Accept.Clear();
+            //httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
             try
             {
+                string url = $"values/id?id=" + $"{id}";
+
+                Microsoft.AspNetCore.Http
+
                 string json = await httpClient.GetStringAsync(url);
-                return JsonConvert.DeserializeObject<Contact>(json);
+                
+                Contact contact = JsonConvert.DeserializeObject<Contact>(json);
+
+                return contact;
             }
             catch (Exception ex) 
-            {
-              Debug.WriteLine( ex.Message);
-            }
+            { 
+                Debug.WriteLine( ex.Message);
 
-            return new Contact();
+                IContact nullContact = NullContact.Create();
+
+                return nullContact;
+            }
         }
 
-        public async void UpdateContact(int id, Contact contact)
+        public async void UpdateContact(int id, IContact contact)
         {
             string url = $"values/id?id=" + $"{id}";
 
@@ -94,7 +101,7 @@ namespace PhoneBook.Data
         /// Добавляет контакт в базу данных, используя web API
         /// </summary>
         /// <param name="newContact"></param>
-        public async void CreateContact(Contact newContact)
+        public async void CreateContact(IContact newContact)
         {
             string url = $"values";
 
