@@ -48,7 +48,7 @@ namespace PhoneBook.Controllers
         //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public IActionResult Details(int? id)
         {
-            Contact contact = _context.GetContact(id).Result;
+            IContact contact = _context.GetContact(id).Result;
 
             if (id == null || contact == null)
             {
@@ -94,7 +94,7 @@ namespace PhoneBook.Controllers
         //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public async Task<IActionResult> Edit(int? id)
         {
-            Contact contact = _context.GetContact(id).Result;
+            IContact contact = _context.GetContact(id).Result;
 
             if (id == null || contact == null)
             {
@@ -143,7 +143,7 @@ namespace PhoneBook.Controllers
         //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public async Task<IActionResult> Delete(int? id)
         {
-            Contact contact = _context.GetContact(id).Result;
+            IContact contact = _context.GetContact(id).Result;
 
             if (id == null || contact == null)
             {

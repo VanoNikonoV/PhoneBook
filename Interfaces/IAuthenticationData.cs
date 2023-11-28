@@ -4,7 +4,7 @@ namespace PhoneBook.Interfaces
 {
     public interface IAuthenticationData
     {
-        Task<string> Login(RequestLogin request);
+        Task<bool> Login(RequestLogin request);
 
         Task Register(User user);
     }

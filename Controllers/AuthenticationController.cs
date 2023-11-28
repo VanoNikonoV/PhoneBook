@@ -26,13 +26,15 @@ namespace PhoneBook.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(RequestLogin request)
+        public async Task<IActionResult> LoginAsync(RequestLogin request)
         {
-            _login.Token = _context.Login(request).Result;
-            _login.Email = request.Email;
-            _login.Password = request.Password;
+            _login.IsToken = await _context.Login(request);
 
-            return Redirect(@"\Contacts\Index");
+            _login.Email = request.Email;
+
+            if (!_login.IsToken) { return Problem("Нет клиента"); } //нужно сообщение об ощибке на 
+
+            else return Redirect(@"\Contacts\Index");
         }
 
         public IActionResult Register() 
@@ -41,11 +43,11 @@ namespace PhoneBook.Controllers
         }
 
         [HttpPost]
-        public IActionResult Register(User user)
+        public async Task<IActionResult> RegisterAsync(User user)
         {
            if (user.Password == user.ConfirmPassword) 
            {
-                _context.Register(user);
+                await _context.Register(user);
 
                 return Redirect(@"\Login");
 
@@ -55,7 +57,9 @@ namespace PhoneBook.Controllers
 
         public IActionResult Logout() 
         {
-            _login.Token = string.Empty;
+            _login.IsToken = false;
+
+            AccessForToken.Token= string.Empty;
 
             return Redirect(@"\Contacts\Index");
         }

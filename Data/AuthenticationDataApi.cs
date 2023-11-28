@@ -19,44 +19,40 @@ namespace PhoneBook.Data
             BaseAddress = new Uri("https://a22273-3287.b.d-f.pw/") 
         };
         
-        public async Task<string> Login(RequestLogin request)
+        public async Task<bool> Login(RequestLogin request)
         {
-            string serelizeContact = JsonConvert.SerializeObject(request);
-
-            var response = await httpClient.PostAsync(
-               requestUri: "authentication/login",
-               content: new StringContent(serelizeContact, Encoding.UTF8,
-               mediaType: "application/json"));
-
             try
             {
-                response.EnsureSuccessStatusCode();
+                string serelizeContact = JsonConvert.SerializeObject(request);
 
-                string  token = response.Content.ReadAsStringAsync().Result;
+                var response = await httpClient.PostAsync(
+                   requestUri: "authentication/login",
+                   content: new StringContent(serelizeContact, Encoding.UTF8,
+                   mediaType: "application/json"));
 
-                return token;
+                HttpResponseMessage httpResponseMessage = response.EnsureSuccessStatusCode();
 
+                if (httpResponseMessage.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    AccessForToken.Token = await response.Content.ReadAsStringAsync();
+
+                    return true;
+                } 
+                if (httpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    Error? error = await response.Content.ReadFromJsonAsync<Error>();
+
+                    return false;
+                }
+                else return false;
+                
             }
             catch (HttpRequestException httpEx)
             {
-               return httpEx.Message;
+                var ex = httpEx.Message; //log?
+
+                return false;
             }
-
-            //if (response.StatusCode == System.Net.HttpStatusCode.NotFound) 
-            //{
-            //    Error? error = await response.Content.ReadFromJsonAsync<Error>();
-
-            //    return error.ToString();
-            //}
-            //else if (response.StatusCode == System.Net.HttpStatusCode.OK)
-            //{
-            //    var token = response.Content.ReadAsStringAsync();
-
-            //    return token.Result;
-            //}
-
-            //return "неполучилось";
-            //var d = response.EnsureSuccessStatusCode();
         }
 
         public async Task Register(User user)

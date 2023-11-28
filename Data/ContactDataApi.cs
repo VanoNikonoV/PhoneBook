@@ -3,6 +3,8 @@ using Newtonsoft.Json;
 using PhoneBook.Models;
 using System.Text;
 using System.Diagnostics;
+using Azure;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PhoneBook.Data
 {
@@ -34,7 +36,7 @@ namespace PhoneBook.Data
         /// Получает все контаты из базы даных, использую web API
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Contact> GetAllContact()
+        public IEnumerable<IContact> GetAllContact()
         {
             string url = $"values";
 
@@ -48,27 +50,43 @@ namespace PhoneBook.Data
         /// </summary>
         /// <param name="id">индентификатор контакта</param>
         /// <returns>Десерилозованный контакт</returns>
-        public async Task<Contact> GetContact(int? id) 
+        public async Task<IContact> GetContact(int? id) 
         {
-            string url = $"values/id?id=" + $"{id}";
-
-            httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
-
             try
             {
-                string json = await httpClient.GetStringAsync(url);
-                return JsonConvert.DeserializeObject<Contact>(json);
-            }
-            catch (Exception ex) 
-            {
-              Debug.WriteLine( ex.Message);
-            }
+                AddTokenFofHeaders();
 
-            return new Contact();
+                string url = $"values/id?id=" + $"{id}";
+
+                using HttpResponseMessage response = await httpClient.GetAsync(url);
+
+                response.EnsureSuccessStatusCode();
+
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    string jsonContact = await response.Content.ReadAsStringAsync();
+
+                    IContact contact = JsonConvert.DeserializeObject<Contact>(jsonContact);
+
+                    return contact;
+                }
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    Error? error = await response.Content.ReadFromJsonAsync<Error>();
+
+                    return NullContact.Create();
+                }
+                return NullContact.Create();
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return NullContact.Create();
+            }
         }
 
-        public async void UpdateContact(int id, Contact contact)
+        public async void UpdateContact(int id, IContact contact)
         {
             string url = $"values/id?id=" + $"{id}";
 
@@ -94,7 +112,7 @@ namespace PhoneBook.Data
         /// Добавляет контакт в базу данных, используя web API
         /// </summary>
         /// <param name="newContact"></param>
-        public async void CreateContact(Contact newContact)
+        public async void CreateContact(IContact newContact)
         {
             string url = $"values";
 
@@ -114,6 +132,21 @@ namespace PhoneBook.Data
 
             catch (Exception http) { Debug.WriteLine(http.Message); }
 
+        }
+
+        private void AddTokenFofHeaders() 
+        {
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
+
+            //BOOL
+            //if (AccessForToken.Token != string.Empty)
+            //{
+            //    httpClient.DefaultRequestHeaders.Accept.Clear();
+            //    httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
+            //    return true;
+            //}
+            //else { return false; }
         }
 
     }
