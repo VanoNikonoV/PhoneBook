@@ -27,6 +27,11 @@ builder.Services.AddTransient<IAuthenticationData, AuthenticationDataApi>();
 
 builder.Services.AddSingleton<IRequestLogin, RequestLogin>();
 
+builder.Services.AddHttpClient("PhoneBook", httpClient =>
+{
+    httpClient.BaseAddress = new Uri("https://a22273-3287.b.d-f.pw/");
+});
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSession(opions =>

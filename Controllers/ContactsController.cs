@@ -50,6 +50,8 @@ namespace PhoneBook.Controllers
         {
             try
             {
+                var Headers = HttpContext.Response.Headers;
+
                 IContact contact = await _context.GetContact(id);
 
                 if (id == null || contact == null)

@@ -10,13 +10,22 @@ namespace PhoneBook.Data
 
     public class ContactDataApi : IContactData
     {
-        private static readonly HttpClient httpClient = new() 
+        private readonly IHttpClientFactory _httpClientFactory;
+
+        //private static readonly HttpClient httpClient = new()
+        //{
+        //    BaseAddress = new Uri("https://a22273-3287.b.d-f.pw/"),
+        //};
+
+
+        private HttpClient httpClient {  get; set; }
+
+        public ContactDataApi(IHttpClientFactory httpClientFactory) 
+        
         {
-            BaseAddress = new Uri("https://a22273-3287.b.d-f.pw/"),
-        };
-
-        public ContactDataApi() { }
-
+            _httpClientFactory = httpClientFactory;
+            this.httpClient = _httpClientFactory.CreateClient("PhoneBook");
+        }
         public async void DeleteContact(int id)
         {
             string url = $"values/id?id={id}";
@@ -51,13 +60,13 @@ namespace PhoneBook.Data
         public async Task<IContact> GetContact(int? id) 
         {
             
+
             //httpClient.DefaultRequestHeaders.Accept.Clear();
             //httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
             try
             {
+                
                 string url = $"values/id?id=" + $"{id}";
-
-                Microsoft.AspNetCore.Http
 
                 string json = await httpClient.GetStringAsync(url);
                 
@@ -120,6 +129,12 @@ namespace PhoneBook.Data
             catch (HttpRequestException http) { Debug.WriteLine(http.Message); }
 
             catch (Exception http) { Debug.WriteLine(http.Message); }
+
+        }
+
+        public async Task InvokeAsync(HttpContext context)
+        {
+            var Z = context.Response.Headers.Accept.ToArray();
 
         }
 
