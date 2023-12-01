@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using PhoneBook.Core;
 using System.Net.Http;
 using NuGet.Protocol.Plugins;
+using System.Net;
+using System;
 
 namespace PhoneBook.Controllers
 {
@@ -44,25 +46,30 @@ namespace PhoneBook.Controllers
         /// </summary>
         /// <param name="id">параметр для поиска контакта</param>
         /// <returns>Task<IActionResult></returns>
-        //[Authorize(Policy = Constants.Policies.RequireManager)]
-        //[Authorize(Policy = Constants.Policies.RequireAdmin)]
-        public IActionResult Details(int? id)
+        public async Task<IActionResult> Details(int? id)
         {
-            IContact contact = _context.GetContact(id).Result;
+            var tuple = await _context.GetContact(id);
+            IContact contact = tuple.Item1;
+            HttpStatusCode statusCode = tuple.Item2;
 
-            if (id == null || contact == null)
-            {
-                return NotFound();
-            }
-            return View(contact);
+            if (statusCode == HttpStatusCode.OK) { return View(contact); }
+            if (contact == null || statusCode == HttpStatusCode.NotFound) { return NotFound(); }
+            if (statusCode == HttpStatusCode.Unauthorized) { return RedirectToAction(nameof(NotAuthentication)); }
+            return RedirectToAction(nameof(Index));
+
+            //IContact contact =await _context.GetContact(id);
+
+            //if (id == null || contact == null)
+            //{
+            //    return NotFound();
+            //}
+            //return View(contact);
         }
 
         /// <summary>
         /// Метод-GET для прехода на страницу с формой для нового контакта
         /// </summary>
         /// <returns>IActionResult</returns>
-        //[Authorize(Policy = Constants.Policies.RequireManager)]
-        //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public IActionResult Create() => View();
  
         /// <summary>
@@ -72,18 +79,24 @@ namespace PhoneBook.Controllers
         /// <param name="contact">модель данных</param>
         /// <returns>Task<IActionResult></returns>
         [HttpPost]
-        //[ValidateAntiForgeryToken]
-        //[Authorize(Policy = Constants.Policies.RequireManager)]
-        //[Authorize(Policy = Constants.Policies.RequireAdmin)]
-        public IActionResult Create([Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] Contact contact)
+        public async Task<IActionResult> Create([Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] IContact contact)
         {
-            if (ModelState.IsValid)
-            {
-                _context.CreateContact(contact);
-                
-                return RedirectToAction(nameof(Index));
-            }
-            return View(contact);
+            var tuple = await _context.CreateContact(contact);
+            IContact returnContact = tuple.Item1;
+            HttpStatusCode statusCode = tuple.Item2;
+
+            if (statusCode == HttpStatusCode.OK) { return View(returnContact); }
+            if (contact == null || statusCode == HttpStatusCode.NotFound) { return NotFound(); }
+            if (statusCode == HttpStatusCode.Unauthorized) { return RedirectToAction(nameof(NotAuthentication)); }
+            return RedirectToAction(nameof(Index));
+
+            //if (ModelState.IsValid)
+            //{
+            //    _context.CreateContact(contact);
+
+            //    return RedirectToAction(nameof(Index));
+            //}
+            //return View(contact);
         }
 
         /// <summary>
@@ -91,16 +104,16 @@ namespace PhoneBook.Controllers
         /// </summary>
         /// <param name="id">параметр для поиска контакта</param>
         /// <returns>Task<IActionResult></returns>
-        //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public async Task<IActionResult> Edit(int? id)
         {
-            IContact contact = _context.GetContact(id).Result;
+            var tuple = await _context.GetContact(id);
+            IContact contact = tuple.Item1;
+            HttpStatusCode statusCode = tuple.Item2;
 
-            if (id == null || contact == null)
-            {
-                return NotFound();
-            }
-            return View(contact);
+            if (statusCode == HttpStatusCode.OK) { return View(contact);}
+            if (contact == null || statusCode == HttpStatusCode.NotFound) { return NotFound(); }
+            if (statusCode == HttpStatusCode.Unauthorized) {  return RedirectToAction(nameof(NotAuthentication)); }
+            return RedirectToAction(nameof(Index));
         }
 
         /// <summary>
@@ -110,9 +123,7 @@ namespace PhoneBook.Controllers
         /// <param name="contact">модель данных</param>
         /// <returns>Task<IActionResult></returns>
         [HttpPost]
-        //[ValidateAntiForgeryToken]
-        //[Authorize(Policy = Constants.Policies.RequireAdmin)]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] Contact contact)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] IContact contact)
         {
             if (id != contact.Id)
             {
@@ -123,14 +134,21 @@ namespace PhoneBook.Controllers
             {
                 try
                 {
-                    _context.UpdateContact(id, contact);
-  
+                    var tuple = await _context.UpdateContact(id, contact);
+                    IContact returnContact = tuple.Item1;
+                    HttpStatusCode statusCode = tuple.Item2;
+
+                    if (statusCode == HttpStatusCode.OK) { return View(returnContact); }
+                    if (contact == null || statusCode == HttpStatusCode.NotFound) { return NotFound(); }
+                    if (statusCode == HttpStatusCode.Unauthorized) { return RedirectToAction(nameof(NotAuthentication)); }
+                    return RedirectToAction(nameof(Index));
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
                     throw new Exception("это уже совсем другая история");
                 }
-                return RedirectToAction(nameof(Index));
+               
             }
             return View(contact);
         }
@@ -140,17 +158,16 @@ namespace PhoneBook.Controllers
         /// </summary>
         /// <param name="id">параметр для поиска контакта</param>
         /// <returns>Task<IActionResult></returns>
-        //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public async Task<IActionResult> Delete(int? id)
         {
-            IContact contact = _context.GetContact(id).Result;
+            var tuple = await _context.GetContact(id);
+            IContact contact = tuple.Item1;
+            HttpStatusCode statusCode = tuple.Item2;
 
-            if (id == null || contact == null)
-            {
-                return NotFound();
-            }
-
-            return View(contact);
+            if (contact == null || statusCode == HttpStatusCode.NotFound) { return NotFound(); }
+            if (statusCode == HttpStatusCode.OK) { return View(contact); }
+            if (statusCode == HttpStatusCode.Unauthorized) { return RedirectToAction(nameof(NotAuthentication)); }
+            return RedirectToAction(nameof(DeleteConfirmed));
         }
 
         /// <summary>
@@ -160,10 +177,9 @@ namespace PhoneBook.Controllers
         /// <returns>Task<IActionResult></returns>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        //[Authorize(Policy = Constants.Policies.RequireAdmin)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            _context.DeleteContact(id);
+            HttpStatusCode returnHttpStatusCode = await _context.DeleteContact(id);
 
             return RedirectToAction(nameof(Index));
         }
@@ -174,5 +190,7 @@ namespace PhoneBook.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         public IActionResult About() => View();
+
+        public IActionResult NotAuthentication() => View();
     }
 }

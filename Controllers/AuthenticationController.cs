@@ -12,8 +12,6 @@ namespace PhoneBook.Controllers
         private readonly IAuthenticationData _context;
         private readonly IRequestLogin _login;
 
-        public string Token { get; set; } = string.Empty;
-
         public AuthenticationController(IAuthenticationData context, IRequestLogin login)
         {
             _context = context;
@@ -49,7 +47,7 @@ namespace PhoneBook.Controllers
            {
                 await _context.Register(user);
 
-                return Redirect(@"\Login");
+                return Redirect("~/Authentication/Login"); 
 
            }
            return View();

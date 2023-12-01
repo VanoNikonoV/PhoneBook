@@ -5,6 +5,7 @@ using System.Text;
 using System.Diagnostics;
 using Azure;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Net;
 
 namespace PhoneBook.Data
 {
@@ -14,22 +15,28 @@ namespace PhoneBook.Data
     {
         private static readonly HttpClient httpClient = new() 
         {
-            BaseAddress = new Uri("https://a22273-3287.b.d-f.pw/"),
+            BaseAddress = new Uri("https://a22508-0df2.k.d-f.pw/"),
         };
 
         public ContactDataApi() {  }
 
-        public async void DeleteContact(int id)
+        public async Task<HttpStatusCode> DeleteContact(int id)
         {
-            string url = $"values/id?id={id}";
+            if (!AddTokenFofHeaders()) return HttpStatusCode.Unauthorized;
+            try
+            {
+                string url = $"values/id?id={id}";
 
-            using HttpResponseMessage response = await httpClient.DeleteAsync(url);
+                using HttpResponseMessage response = await httpClient.DeleteAsync(url);
 
-            response.EnsureSuccessStatusCode();
+                return response.StatusCode;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return  HttpStatusCode.NotFound;
+            }
 
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-
-            Console.WriteLine($"{jsonResponse}\n");
         }
 
         /// <summary>
@@ -50,61 +57,98 @@ namespace PhoneBook.Data
         /// </summary>
         /// <param name="id">индентификатор контакта</param>
         /// <returns>Десерилозованный контакт</returns>
-        public async Task<IContact> GetContact(int? id) 
+        public async Task<(IContact, HttpStatusCode)> GetContact(int? id) 
         {
+            if (!AddTokenFofHeaders()) return (NullContact.Create(), HttpStatusCode.Unauthorized);
+            
             try
             {
-                AddTokenFofHeaders();
+                //AddTokenFofHeaders();
 
                 string url = $"values/id?id=" + $"{id}";
 
                 using HttpResponseMessage response = await httpClient.GetAsync(url);
 
-                response.EnsureSuccessStatusCode();
-
-                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                if (response.IsSuccessStatusCode)
                 {
                     string jsonContact = await response.Content.ReadAsStringAsync();
 
                     IContact contact = JsonConvert.DeserializeObject<Contact>(jsonContact);
 
-                    return contact;
+                    return (contact, response.StatusCode);
                 }
-                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    Error? error = await response.Content.ReadFromJsonAsync<Error>();
+                else { return (NullContact.Create(), response.StatusCode);}
 
-                    return NullContact.Create();
-                }
-                return NullContact.Create();
+                //response.EnsureSuccessStatusCode();
+
+                //if (response.StatusCode == HttpStatusCode.OK)
+                //{
+                //    string jsonContact = await response.Content.ReadAsStringAsync();
+
+                //    IContact contact = JsonConvert.DeserializeObject<Contact>(jsonContact);
+
+                //    return (contact, response.StatusCode);
+                //}
+                //if (response.StatusCode == HttpStatusCode.Unauthorized)
+                //{
+                //    Error? error = await response.Content.ReadFromJsonAsync<Error>();
+
+                //    return (NullContact.Create(), response.StatusCode);
+                //}
+                //if (response.StatusCode == HttpStatusCode.Forbidden)
+                //{
+                //    Error? error = await response.Content.ReadFromJsonAsync<Error>();
+
+                //    return (NullContact.Create(), response.StatusCode);
+                //}
+
+                //return (NullContact.Create(), response.StatusCode);
 
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
-                return NullContact.Create();
+                return (NullContact.Create(), HttpStatusCode.NotFound);
             }
         }
 
-        public async void UpdateContact(int id, IContact contact)
+        public async Task<(IContact, HttpStatusCode)> UpdateContact(int id, IContact contact)
         {
-            string url = $"values/id?id=" + $"{id}";
+            if (!AddTokenFofHeaders()) return (NullContact.Create(), HttpStatusCode.Unauthorized);
 
-            string serelizeContact = JsonConvert.SerializeObject(contact);
+            string url = $"values/id?id=" + $"{id}";
 
             try
             {
+               string serelizeContact = JsonConvert.SerializeObject(contact);
                var response = await httpClient.PutAsync(
                requestUri: url,
                content: new StringContent(serelizeContact, Encoding.UTF8,
                mediaType: "application/json"));
 
-               Debug.Write($"\t\t\t" + response.StatusCode);
+               if (response.IsSuccessStatusCode) 
+               {
+                    string jsonContact = await response.Content.ReadAsStringAsync();
+
+                    IContact returnContact = JsonConvert.DeserializeObject<IContact>(jsonContact);
+
+                    return (returnContact, response.StatusCode);
+               }
+               else { return (NullContact.Create(), response.StatusCode); }
+
             }
 
-            catch (HttpRequestException http) { Debug.WriteLine(http.Message); }
+            catch (HttpRequestException http) 
+            {
+                Debug.WriteLine(http.Message);
+                return (NullContact.Create(), HttpStatusCode.NotFound);
+            }
 
-            catch (Exception ex) { Debug.WriteLine(ex.Message); }
+            catch (Exception ex) 
+            {
+                Debug.WriteLine(ex.Message);
+                return (NullContact.Create(), HttpStatusCode.NotFound);
+            }
            
         }
 
@@ -112,41 +156,62 @@ namespace PhoneBook.Data
         /// Добавляет контакт в базу данных, используя web API
         /// </summary>
         /// <param name="newContact"></param>
-        public async void CreateContact(IContact newContact)
+        public async Task<(IContact, HttpStatusCode)> CreateContact(IContact newContact)
         {
-            string url = $"values";
+            if(!AddTokenFofHeaders()) return (NullContact.Create(), HttpStatusCode.Unauthorized);
 
-            string serelizeContact = JsonConvert.SerializeObject(newContact);
+            string url = $"values";
 
             try
             {
+                string serelizeContact = JsonConvert.SerializeObject(newContact);
                 var response = await httpClient.PostAsync(
                 requestUri: url,
                 content: new StringContent(serelizeContact, Encoding.UTF8,
                 mediaType: "application/json"));
 
-                Debug.Write($"\t\t\t" + response.EnsureSuccessStatusCode());
-            }
-            
-            catch (HttpRequestException http) { Debug.WriteLine(http.Message); }
+                if (response.IsSuccessStatusCode) 
+                {
+                    string jsonContact = await response.Content.ReadAsStringAsync();
 
-            catch (Exception http) { Debug.WriteLine(http.Message); }
+                    IContact returnContact = JsonConvert.DeserializeObject<IContact>(jsonContact);
+
+                    return (returnContact, response.StatusCode);
+                }
+                else { return (NullContact.Create(), response.StatusCode); }
+            }
+
+            catch (HttpRequestException http)
+            {
+                Debug.WriteLine(http.Message);
+                return (NullContact.Create(), HttpStatusCode.NotFound);
+            }
+
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return (NullContact.Create(), HttpStatusCode.NotFound);
+            }
 
         }
 
-        private void AddTokenFofHeaders() 
+        /// <summary>
+        /// Добавляет jwt-токен в заголовок ответа 
+        /// </summary>
+        /// <returns>true - при успешной регистрации </returns>
+        private bool AddTokenFofHeaders() 
         {
-            httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
+            //httpClient.DefaultRequestHeaders.Accept.Clear();
+            //httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
 
             //BOOL
-            //if (AccessForToken.Token != string.Empty)
-            //{
-            //    httpClient.DefaultRequestHeaders.Accept.Clear();
-            //    httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
-            //    return true;
-            //}
-            //else { return false; }
+            if (AccessForToken.Token != string.Empty)
+            {
+                httpClient.DefaultRequestHeaders.Accept.Clear();
+                httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
+                return true;
+            }
+            else { return false; }
         }
 
     }
