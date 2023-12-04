@@ -1,6 +1,7 @@
 ﻿using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.Scripting;
+using NuGet.Common;
 using PhoneBook.Interfaces;
 using PhoneBook.Models;
 
@@ -26,9 +27,12 @@ namespace PhoneBook.Controllers
         [HttpPost]
         public async Task<IActionResult> LoginAsync(RequestLogin request)
         {
-            _login.IsToken = await _context.Login(request);
+            string token = await _context.Login(request);
+
+            HttpContext.Session.SetString("JWTtoken", token);
 
             _login.Email = request.Email;
+            _login.IsToken = true;
 
             if (!_login.IsToken) { return Problem("Нет клиента"); } //нужно сообщение об ощибке на 
 

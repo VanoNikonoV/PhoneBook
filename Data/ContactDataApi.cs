@@ -13,16 +13,25 @@ namespace PhoneBook.Data
 
     public class ContactDataApi : IContactData
     {
+        private readonly IRequestLogin _login;
+
         private static readonly HttpClient httpClient = new() 
         {
             BaseAddress = new Uri("https://a22508-0df2.k.d-f.pw/"),
         };
 
-        public ContactDataApi() {  }
+        public ContactDataApi(IRequestLogin login) 
+        {
+            _login = login;
+        }
 
         public async Task<HttpStatusCode> DeleteContact(int id)
         {
-            if (!AddTokenFofHeaders()) return HttpStatusCode.Unauthorized;
+            //if (!AddTokenFofHeaders()) return HttpStatusCode.Unauthorized;
+            if (!_login.IsToken)
+            {
+                return  HttpStatusCode.Unauthorized;
+            }
             try
             {
                 string url = $"values/id?id={id}";
@@ -59,8 +68,11 @@ namespace PhoneBook.Data
         /// <returns>Десерилозованный контакт</returns>
         public async Task<(IContact, HttpStatusCode)> GetContact(int? id) 
         {
-            if (!AddTokenFofHeaders()) return (NullContact.Create(), HttpStatusCode.Unauthorized);
-            
+            //if (!AddTokenFofHeaders()) return (NullContact.Create(), HttpStatusCode.Unauthorized);
+            if (!_login.IsToken)
+            {
+                return (NullContact.Create(), HttpStatusCode.Unauthorized);
+            }
             try
             {
                 //AddTokenFofHeaders();
@@ -114,7 +126,12 @@ namespace PhoneBook.Data
 
         public async Task<(IContact, HttpStatusCode)> UpdateContact(int id, IContact contact)
         {
-            if (!AddTokenFofHeaders()) return (NullContact.Create(), HttpStatusCode.Unauthorized);
+            if (!_login.IsToken)
+            {
+                return (NullContact.Create(), HttpStatusCode.Unauthorized);
+            }
+
+            //if (!AddTokenFofHeaders()) return (NullContact.Create(), HttpStatusCode.Unauthorized);
 
             string url = $"values/id?id=" + $"{id}";
 
@@ -158,8 +175,12 @@ namespace PhoneBook.Data
         /// <param name="newContact"></param>
         public async Task<(IContact, HttpStatusCode)> CreateContact(IContact newContact)
         {
-            if(!AddTokenFofHeaders()) return (NullContact.Create(), HttpStatusCode.Unauthorized);
+            //if(!AddTokenFofHeaders()) return (NullContact.Create(), HttpStatusCode.Unauthorized);
 
+            if (!_login.IsToken)
+            {
+                return (NullContact.Create(), HttpStatusCode.Unauthorized);
+            }
             string url = $"values";
 
             try
@@ -199,20 +220,17 @@ namespace PhoneBook.Data
         /// Добавляет jwt-токен в заголовок ответа 
         /// </summary>
         /// <returns>true - при успешной регистрации </returns>
-        private bool AddTokenFofHeaders() 
-        {
-            //httpClient.DefaultRequestHeaders.Accept.Clear();
-            //httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
-
-            //BOOL
-            if (AccessForToken.Token != string.Empty)
-            {
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
-                return true;
-            }
-            else { return false; }
-        }
+        //private bool AddTokenFofHeaders() 
+        //{
+           
+        //    if (AccessForToken.Token != string.Empty)
+        //    {
+        //        httpClient.DefaultRequestHeaders.Accept.Clear();
+        //        httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
+        //        return true;
+        //    }
+        //    else { return false; }
+        //}
 
     }
 }

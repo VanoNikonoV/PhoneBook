@@ -19,7 +19,7 @@ namespace PhoneBook.Data
             BaseAddress = new Uri("https://a22508-0df2.k.d-f.pw/") 
         };
         
-        public async Task<bool> Login(RequestLogin request)
+        public async Task<string> Login(RequestLogin request)
         {
             try
             {
@@ -34,24 +34,24 @@ namespace PhoneBook.Data
 
                 if (httpResponseMessage.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    AccessForToken.Token = await response.Content.ReadAsStringAsync();
+                    string token = await response.Content.ReadAsStringAsync();
 
-                    return true;
+                    return token;
                 } 
                 if (httpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
                     Error? error = await response.Content.ReadFromJsonAsync<Error>();
 
-                    return false;
+                    return error.ToString();
                 }
-                else return false;
+                else return string.Empty;
                 
             }
             catch (HttpRequestException httpEx)
             {
                 var ex = httpEx.Message; //log?
 
-                return false;
+                return string.Empty;
             }
         }
 
