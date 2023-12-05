@@ -14,11 +14,14 @@ namespace PhoneBook.Models
         /// </summary>
         public string LastName { get; set; } = string.Empty;
 
-        public string Email { get; set; }
+        /// <summary>
+        /// Адрес электронной почты
+        /// </summary>
+        public string Email { get; set; } = string.Empty;
 
         /// <summary>
-        /// Пароль
+        /// Зашиврованный пароль пользователя
         /// </summary>
-        public string Password { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
     }
 }

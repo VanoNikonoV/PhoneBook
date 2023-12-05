@@ -1,11 +1,12 @@
 ﻿using PhoneBook.Models;
+using System.Net;
 
 namespace PhoneBook.Interfaces
 {
     public interface IAuthenticationData
     {
-        Task<bool> Login(RequestLogin request);
+        Task<HttpStatusCode> Login(RequestLogin request);
 
-        Task Register(User user);
+        Task<HttpStatusCode> Register(User user);
     }
 }

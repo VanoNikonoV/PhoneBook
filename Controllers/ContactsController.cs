@@ -3,11 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PhoneBook.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using PhoneBook.Core;
-using System.Net.Http;
-using NuGet.Protocol.Plugins;
 using System.Net;
-using System;
 
 namespace PhoneBook.Controllers
 {
@@ -79,7 +75,7 @@ namespace PhoneBook.Controllers
         /// <param name="contact">модель данных</param>
         /// <returns>Task<IActionResult></returns>
         [HttpPost]
-        public async Task<IActionResult> Create([Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] IContact contact)
+        public async Task<IActionResult> Create([Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] Contact contact)
         {
             var tuple = await _context.CreateContact(contact);
             IContact returnContact = tuple.Item1;
@@ -123,7 +119,7 @@ namespace PhoneBook.Controllers
         /// <param name="contact">модель данных</param>
         /// <returns>Task<IActionResult></returns>
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] IContact contact)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] Contact contact)
         {
             if (id != contact.Id)
             {

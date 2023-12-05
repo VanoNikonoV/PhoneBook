@@ -1,8 +1,7 @@
-﻿using Azure.Core;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.Scripting;
+﻿using Microsoft.AspNetCore.Mvc;
 using PhoneBook.Interfaces;
 using PhoneBook.Models;
+using System.Net;
 
 namespace PhoneBook.Controllers
 {
@@ -18,37 +17,39 @@ namespace PhoneBook.Controllers
             _login = login;
         }
 
-        public IActionResult Login()
-        {
-            return View();
-        }
+        public IActionResult Login() { return View(); }
 
         [HttpPost]
         public async Task<IActionResult> LoginAsync(RequestLogin request)
         {
-            _login.IsToken = await _context.Login(request);
+            HttpStatusCode httpStatusCode = await _context.Login(request);
 
-            _login.Email = request.Email;
+            if (httpStatusCode == HttpStatusCode.OK)
+            {
+                _login.IsToken = true;
 
-            if (!_login.IsToken) { return Problem("Нет клиента"); } //нужно сообщение об ощибке на 
+                _login.Email = request.Email;
+            }
+
+            if (httpStatusCode == HttpStatusCode.NotFound) { return Problem("Нет клиента"); }
 
             else return Redirect(@"\Contacts\Index");
         }
 
-        public IActionResult Register() 
-        {
-            return View();
-        }
+        public IActionResult Register() { return View(); }
 
         [HttpPost]
         public async Task<IActionResult> RegisterAsync(User user)
         {
            if (user.Password == user.ConfirmPassword) 
            {
-                await _context.Register(user);
+                HttpStatusCode httpStatusCode = await _context.Register(user);
 
-                return Redirect("~/Authentication/Login"); 
-
+                if (httpStatusCode == HttpStatusCode.OK)
+                {
+                    return Redirect("~/Authentication/Login");
+                }
+                else { return Problem(httpStatusCode.ToString()); }
            }
            return View();
         }
@@ -57,7 +58,7 @@ namespace PhoneBook.Controllers
         {
             _login.IsToken = false;
 
-            AccessForToken.Token= string.Empty;
+            AccessForToken.Token = string.Empty;
 
             return Redirect(@"\Contacts\Index");
         }

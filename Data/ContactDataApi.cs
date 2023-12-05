@@ -3,17 +3,12 @@ using Newtonsoft.Json;
 using PhoneBook.Models;
 using System.Text;
 using System.Diagnostics;
-using Azure;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Net;
-using NuGet.Protocol.Plugins;
-using Microsoft.Build.Framework;
-using System.Net.Http;
 
 namespace PhoneBook.Data
 {
     //https://v2.d-f.pw/app/create-application
-    
+
     public class ContactDataApi : IContactData
     {
         private readonly IRequestLogin _login;
@@ -129,7 +124,7 @@ namespace PhoneBook.Data
                 {
                     client.DefaultRequestHeaders.Accept.Clear();
 
-                    client.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
+                    client.DefaultRequestHeaders.Add("Authorization","Bearer " + AccessForToken.Token);
 
                     string url = $"values/id?id=" + $"{id}";
 

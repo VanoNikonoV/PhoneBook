@@ -1,15 +1,12 @@
-﻿using Azure.Core;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using PhoneBook.Interfaces;
 using PhoneBook.Models;
-using System.Net.Http;
+using System.Net;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PhoneBook.Data
 {
-    
+
     public class AuthenticationDataApi :IAuthenticationData
     {
         public AuthenticationDataApi() { }
@@ -19,67 +16,40 @@ namespace PhoneBook.Data
             BaseAddress = new Uri("https://a22508-0df2.k.d-f.pw/") 
         };
         
-        public async Task<bool> Login(RequestLogin request)
+        public async Task<HttpStatusCode> Login(RequestLogin request)
         {
-            try
-            {
-                string serelizeContact = JsonConvert.SerializeObject(request);
+            string serelizeContact = JsonConvert.SerializeObject(request);
 
-                var response = await httpClient.PostAsync(
-                   requestUri: "authentication/login",
-                   content: new StringContent(serelizeContact, Encoding.UTF8,
-                   mediaType: "application/json"));
+            var response = await httpClient.PostAsync(
+                requestUri: "authentication/login",
+                content: new StringContent(serelizeContact, Encoding.UTF8,
+                mediaType: "application/json"));
 
-                HttpResponseMessage httpResponseMessage = response.EnsureSuccessStatusCode();
-
-                if (httpResponseMessage.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    AccessForToken.Token = await response.Content.ReadAsStringAsync();
-
-                    return true;
-                } 
-                if (httpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    Error? error = await response.Content.ReadFromJsonAsync<Error>();
-
-                    return false;
-                }
-                else return false;
-                
-            }
-            catch (HttpRequestException httpEx)
-            {
-                var ex = httpEx.Message; //log?
-
-                return false;
-            }
+            if (response.IsSuccessStatusCode) { return response.StatusCode; }
+            else { return response.StatusCode; }
         }
 
-        public async Task Register(User user)
+        public async Task<HttpStatusCode> Register(User user)
         {
             UserDto userDto = new UserDto();
 
             userDto.FirstName = user.FirstName;
             userDto.LastName = user.LastName;
-            userDto.Password = user.Password;
+
+            string passwordHash = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            userDto.PasswordHash = passwordHash;
+
             userDto.Email = user.Email;
 
             string serelizeUser = JsonConvert.SerializeObject(userDto);
 
             var response = await httpClient.PostAsync(
-               requestUri: "authentication/register",
-               content: new StringContent(serelizeUser, Encoding.UTF8,
-               mediaType: "application/json"));
+                requestUri: "authentication/register",
+                content: new StringContent(serelizeUser, Encoding.UTF8,
+                mediaType: "application/json"));
 
-            try
-            {
-                response.EnsureSuccessStatusCode();
-
-            }
-            catch (HttpRequestException httpEx)
-            {
-               
-            }
+            if (response.IsSuccessStatusCode) { return response.StatusCode; }
+            else { return response.StatusCode; }
 
         }
     }
