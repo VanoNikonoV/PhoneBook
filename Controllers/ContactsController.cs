@@ -26,11 +26,11 @@ namespace PhoneBook.Controllers
         /// <param name="searchString">строка для параметр фильта по фамилии</param>
         /// <returns>IActionResult</returns>
         [AllowAnonymous]
-        public IActionResult Index(string searchString)
+        public async Task<IActionResult> Index(string searchString)
         {
             try
             {
-                var contactFiltr = _context.GetAllContact();
+                IEnumerable<IContact> contactFiltr = await _context.GetAllContact();
 
                 if (!String.IsNullOrEmpty(searchString))
                 {

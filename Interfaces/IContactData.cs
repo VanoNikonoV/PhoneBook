@@ -5,7 +5,7 @@ namespace PhoneBook.Interfaces
 {
     public interface IContactData
     {
-        IEnumerable<IContact> GetAllContact();
+        Task<IEnumerable<IContact>> GetAllContact();
         Task<(IContact, HttpStatusCode)> GetContact(int? id);
         Task<(IContact, HttpStatusCode)> CreateContact(IContact newContact);
         Task<(IContact, HttpStatusCode)> UpdateContact(int id, IContact contact);

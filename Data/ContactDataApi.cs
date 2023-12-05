@@ -6,30 +6,47 @@ using System.Diagnostics;
 using Azure;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Net;
+using NuGet.Protocol.Plugins;
+using Microsoft.Build.Framework;
+using System.Net.Http;
 
 namespace PhoneBook.Data
 {
     //https://v2.d-f.pw/app/create-application
-
+    
     public class ContactDataApi : IContactData
     {
-        private static readonly HttpClient httpClient = new() 
+        private readonly IRequestLogin _login;
+
+        private readonly Uri baseAddress = new Uri("https://a22508-0df2.k.d-f.pw/");
+
+        public ContactDataApi(IRequestLogin login) 
         {
-            BaseAddress = new Uri("https://a22508-0df2.k.d-f.pw/"),
-        };
+            _login = login;
+        }
 
-        public ContactDataApi() {  }
-
+        /// <summary>
+        /// Производит удаление контакта из базы данных
+        /// </summary>
+        /// <param name="id">индентификатор контакта</param>
+        /// <returns>HttpStatusCode</returns>
         public async Task<HttpStatusCode> DeleteContact(int id)
         {
-            if (!AddTokenFofHeaders()) return HttpStatusCode.Unauthorized;
+            if (!_login.IsToken) return HttpStatusCode.Unauthorized;
             try
             {
-                string url = $"values/id?id={id}";
+                using (var client = new HttpClient() { BaseAddress = baseAddress })
+                {
+                    client.DefaultRequestHeaders.Accept.Clear();
 
-                using HttpResponseMessage response = await httpClient.DeleteAsync(url);
+                    client.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
 
-                return response.StatusCode;
+                    string url = $"values/id?id={id}";
+
+                    HttpResponseMessage response = await client.DeleteAsync(url);
+
+                    return response.StatusCode;
+                }
             }
             catch (Exception ex)
             {
@@ -43,13 +60,18 @@ namespace PhoneBook.Data
         /// Получает все контаты из базы даных, использую web API
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<IContact> GetAllContact()
+        public async Task<IEnumerable<IContact>> GetAllContact()
         {
-            string url = $"values";
+            using (var client = new HttpClient() { BaseAddress = baseAddress })
+            {
+                string url = $"values";
 
-            string json = httpClient.GetStringAsync(url).Result;
+                string json = await client.GetStringAsync(url);
 
-            return JsonConvert.DeserializeObject<IEnumerable<Contact>>(json);
+                IEnumerable<IContact> contacts = JsonConvert.DeserializeObject<IEnumerable<Contact>>(json);
+
+                return contacts;
+            }   
         }
 
         /// <summary>
@@ -59,51 +81,30 @@ namespace PhoneBook.Data
         /// <returns>Десерилозованный контакт</returns>
         public async Task<(IContact, HttpStatusCode)> GetContact(int? id) 
         {
-            if (!AddTokenFofHeaders()) return (NullContact.Create(), HttpStatusCode.Unauthorized);
+            if (!_login.IsToken) return (NullContact.Create(), HttpStatusCode.Unauthorized);
             
             try
             {
-                //AddTokenFofHeaders();
-
-                string url = $"values/id?id=" + $"{id}";
-
-                using HttpResponseMessage response = await httpClient.GetAsync(url);
-
-                if (response.IsSuccessStatusCode)
+                using (var client = new HttpClient() { BaseAddress = baseAddress }) 
                 {
-                    string jsonContact = await response.Content.ReadAsStringAsync();
+                    client.DefaultRequestHeaders.Accept.Clear();
 
-                    IContact contact = JsonConvert.DeserializeObject<Contact>(jsonContact);
+                    client.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
 
-                    return (contact, response.StatusCode);
+                    string url = $"values/id?id=" + $"{id}";
+
+                    HttpResponseMessage response = await client.GetAsync(url);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string jsonContact = await response.Content.ReadAsStringAsync();
+
+                        IContact contact = JsonConvert.DeserializeObject<Contact>(jsonContact);
+
+                        return (contact, response.StatusCode);
+                    }
+                    else { return (NullContact.Create(), response.StatusCode); }
                 }
-                else { return (NullContact.Create(), response.StatusCode);}
-
-                //response.EnsureSuccessStatusCode();
-
-                //if (response.StatusCode == HttpStatusCode.OK)
-                //{
-                //    string jsonContact = await response.Content.ReadAsStringAsync();
-
-                //    IContact contact = JsonConvert.DeserializeObject<Contact>(jsonContact);
-
-                //    return (contact, response.StatusCode);
-                //}
-                //if (response.StatusCode == HttpStatusCode.Unauthorized)
-                //{
-                //    Error? error = await response.Content.ReadFromJsonAsync<Error>();
-
-                //    return (NullContact.Create(), response.StatusCode);
-                //}
-                //if (response.StatusCode == HttpStatusCode.Forbidden)
-                //{
-                //    Error? error = await response.Content.ReadFromJsonAsync<Error>();
-
-                //    return (NullContact.Create(), response.StatusCode);
-                //}
-
-                //return (NullContact.Create(), response.StatusCode);
-
             }
             catch (Exception ex)
             {
@@ -111,31 +112,44 @@ namespace PhoneBook.Data
                 return (NullContact.Create(), HttpStatusCode.NotFound);
             }
         }
-
+        /// <summary>
+        /// Производит обновление данных контакта
+        /// </summary>
+        /// <param name="id">индентификатор контакта</param>
+        /// <param name="contact"></param>
+        /// <returns>IContact - измененный контакт в случае успешного соединения
+        /// NullContact - в случае не поладок в соединении</returns>
         public async Task<(IContact, HttpStatusCode)> UpdateContact(int id, IContact contact)
         {
-            if (!AddTokenFofHeaders()) return (NullContact.Create(), HttpStatusCode.Unauthorized);
-
-            string url = $"values/id?id=" + $"{id}";
+            if (!_login.IsToken) return (NullContact.Create(), HttpStatusCode.Unauthorized);
 
             try
             {
-               string serelizeContact = JsonConvert.SerializeObject(contact);
-               var response = await httpClient.PutAsync(
-               requestUri: url,
-               content: new StringContent(serelizeContact, Encoding.UTF8,
-               mediaType: "application/json"));
+                using (var client = new HttpClient() { BaseAddress = baseAddress })
+                {
+                    client.DefaultRequestHeaders.Accept.Clear();
 
-               if (response.IsSuccessStatusCode) 
-               {
-                    string jsonContact = await response.Content.ReadAsStringAsync();
+                    client.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
 
-                    IContact returnContact = JsonConvert.DeserializeObject<IContact>(jsonContact);
+                    string url = $"values/id?id=" + $"{id}";
 
-                    return (returnContact, response.StatusCode);
-               }
-               else { return (NullContact.Create(), response.StatusCode); }
+                    string serelizeContact = JsonConvert.SerializeObject(contact);
 
+                    var response = await client.PutAsync(
+                    requestUri: url,
+                    content: new StringContent(serelizeContact, Encoding.UTF8,
+                    mediaType: "application/json"));
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string jsonContact = await response.Content.ReadAsStringAsync();
+
+                        IContact returnContact = JsonConvert.DeserializeObject<IContact>(jsonContact);
+
+                        return (returnContact, response.StatusCode);
+                    }
+                    else { return (NullContact.Create(), response.StatusCode); }
+                }
             }
 
             catch (HttpRequestException http) 
@@ -158,27 +172,35 @@ namespace PhoneBook.Data
         /// <param name="newContact"></param>
         public async Task<(IContact, HttpStatusCode)> CreateContact(IContact newContact)
         {
-            if(!AddTokenFofHeaders()) return (NullContact.Create(), HttpStatusCode.Unauthorized);
-
-            string url = $"values";
+            if(!_login.IsToken) return (NullContact.Create(), HttpStatusCode.Unauthorized);
 
             try
             {
-                string serelizeContact = JsonConvert.SerializeObject(newContact);
-                var response = await httpClient.PostAsync(
-                requestUri: url,
-                content: new StringContent(serelizeContact, Encoding.UTF8,
-                mediaType: "application/json"));
-
-                if (response.IsSuccessStatusCode) 
+                using (var client = new HttpClient() { BaseAddress = baseAddress })
                 {
-                    string jsonContact = await response.Content.ReadAsStringAsync();
+                    client.DefaultRequestHeaders.Accept.Clear();
 
-                    IContact returnContact = JsonConvert.DeserializeObject<IContact>(jsonContact);
+                    client.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
 
-                    return (returnContact, response.StatusCode);
+                    string url = $"values";
+
+                    string serelizeContact = JsonConvert.SerializeObject(newContact);
+
+                    var response = await client.PostAsync(
+                    requestUri: url,
+                    content: new StringContent(serelizeContact, Encoding.UTF8,
+                    mediaType: "application/json"));
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string jsonContact = await response.Content.ReadAsStringAsync();
+
+                        IContact returnContact = JsonConvert.DeserializeObject<IContact>(jsonContact);
+
+                        return (returnContact, response.StatusCode);
+                    }
+                    else { return (NullContact.Create(), response.StatusCode); }
                 }
-                else { return (NullContact.Create(), response.StatusCode); }
             }
 
             catch (HttpRequestException http)
@@ -194,25 +216,5 @@ namespace PhoneBook.Data
             }
 
         }
-
-        /// <summary>
-        /// Добавляет jwt-токен в заголовок ответа 
-        /// </summary>
-        /// <returns>true - при успешной регистрации </returns>
-        private bool AddTokenFofHeaders() 
-        {
-            //httpClient.DefaultRequestHeaders.Accept.Clear();
-            //httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
-
-            //BOOL
-            if (AccessForToken.Token != string.Empty)
-            {
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + AccessForToken.Token);
-                return true;
-            }
-            else { return false; }
-        }
-
     }
 }
