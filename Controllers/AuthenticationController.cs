@@ -1,3 +1,4 @@
+
 ﻿using Microsoft.AspNetCore.Mvc;
 using PhoneBook.Interfaces;
 using PhoneBook.Models;
@@ -29,6 +30,8 @@ namespace PhoneBook.Controllers
                 _login.IsToken = true;
 
                 _login.Email = request.Email;
+
+
             }
 
             if (httpStatusCode == HttpStatusCode.NotFound) { return Problem("Нет клиента"); }

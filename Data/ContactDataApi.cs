@@ -13,7 +13,7 @@ namespace PhoneBook.Data
     {
         private readonly IRequestLogin _login;
 
-        private readonly Uri baseAddress = new Uri("https://a22508-0df2.k.d-f.pw/");
+        private readonly Uri baseAddress = new Uri("https://a22574-8749.k.d-f.pw/");
 
         public ContactDataApi(IRequestLogin login) 
         {

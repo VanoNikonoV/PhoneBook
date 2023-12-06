@@ -177,7 +177,15 @@ namespace PhoneBook.Controllers
         {
             HttpStatusCode returnHttpStatusCode = await _context.DeleteContact(id);
 
-            return RedirectToAction(nameof(Index));
+            if (returnHttpStatusCode == HttpStatusCode.OK) { return RedirectToAction(nameof(Index)); }
+
+            if (returnHttpStatusCode == HttpStatusCode.Unauthorized 
+                || returnHttpStatusCode == HttpStatusCode.Forbidden) 
+                    { return RedirectToAction(nameof(NotAuthentication)); }
+
+            else return RedirectToAction(nameof(Index));
+
+
         }
 
         /// <summary>
