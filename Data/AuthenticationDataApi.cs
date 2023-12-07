@@ -13,7 +13,7 @@ namespace PhoneBook.Data
 
         private static readonly HttpClient httpClient = new()
         {
-            BaseAddress = new Uri("https://a22574-8749.k.d-f.pw/") 
+            BaseAddress = new Uri("https://a22611-1ae3.k.d-f.pw/") 
         };
         
         public async Task<HttpStatusCode> Login(RequestLogin request)

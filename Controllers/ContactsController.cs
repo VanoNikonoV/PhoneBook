@@ -59,13 +59,6 @@ namespace PhoneBook.Controllers
             if (statusCode == HttpStatusCode.Unauthorized) { return RedirectToAction(nameof(NotAuthentication)); }
             return RedirectToAction(nameof(Index));
 
-            //IContact contact =await _context.GetContact(id);
-
-            //if (id == null || contact == null)
-            //{
-            //    return NotFound();
-            //}
-            //return View(contact);
         }
 
         /// <summary>
@@ -95,7 +88,7 @@ namespace PhoneBook.Controllers
             {
                 HttpStatusCode statusCode = await _context.CreateContact(contact);
 
-                if (statusCode == HttpStatusCode.OK) { return RedirectToAction(nameof(Index)); }
+                if (statusCode == HttpStatusCode.Created) { return RedirectToAction(nameof(Index)); }
                 if (contact == null || statusCode == HttpStatusCode.NotFound) { return NotFound(); }
                 if (statusCode == HttpStatusCode.Unauthorized) { return RedirectToAction(nameof(NotAuthentication)); }
 
@@ -130,32 +123,30 @@ namespace PhoneBook.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] Contact contact)
         {
-            if (id != contact.Id)
+            if (id != contact.Id) { return NotFound(); }
+
+            ValidationResult result = await _validator.ValidateAsync(contact);
+
+            if (!result.IsValid)
             {
-                return NotFound();
-            }
+                result.AddToModelState(this.ModelState);
 
-            if (ModelState.IsValid)
+                return View(contact);
+            }
+            else
             {
-                try
-                {
-                    var tuple = await _context.UpdateContact(id, contact);
-                    IContact returnContact = tuple.Item1;
-                    HttpStatusCode statusCode = tuple.Item2;
+                HttpStatusCode statusCode = await _context.UpdateContact(id, contact);
 
-                    if (statusCode == HttpStatusCode.OK) { return View(returnContact); }
-                    if (contact == null || statusCode == HttpStatusCode.NotFound) { return NotFound(); }
-                    if (statusCode == HttpStatusCode.Unauthorized) { return RedirectToAction(nameof(NotAuthentication)); }
-                    return RedirectToAction(nameof(Index));
+                if (statusCode == HttpStatusCode.OK) { return RedirectToAction(nameof(Index)); }
 
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    throw new Exception("это уже совсем другая история");
-                }
-               
+                if (contact == null || statusCode == HttpStatusCode.NotFound) { return NotFound(); }
+
+                if (statusCode == HttpStatusCode.Unauthorized || statusCode == HttpStatusCode.Forbidden)
+                    
+                        { return RedirectToAction(nameof(NotAuthentication)); }
+
+                return RedirectToAction(nameof(Index));
             }
-            return View(contact);
         }
 
         /// <summary>
@@ -193,8 +184,6 @@ namespace PhoneBook.Controllers
                     { return RedirectToAction(nameof(NotAuthentication)); }
 
             else return RedirectToAction(nameof(Index));
-
-
         }
 
         /// <summary>

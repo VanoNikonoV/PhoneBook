@@ -8,7 +8,7 @@ namespace PhoneBook.Interfaces
         Task<IEnumerable<IContact>> GetAllContact();
         Task<(IContact, HttpStatusCode)> GetContact(int? id);
         Task<HttpStatusCode> CreateContact(IContact newContact);
-        Task<(IContact, HttpStatusCode)> UpdateContact(int id, IContact contact);
+        Task<HttpStatusCode> UpdateContact(int id, IContact contact);
         Task<HttpStatusCode> DeleteContact(int id);
     }
 }

@@ -30,11 +30,9 @@ namespace PhoneBook.Controllers
                 _login.IsToken = true;
 
                 _login.Email = request.Email;
-
-
             }
 
-            if (httpStatusCode == HttpStatusCode.NotFound) { return Problem("Нет клиента"); }
+            if (httpStatusCode == HttpStatusCode.BadRequest) { return Problem("Нет клиента с такими данными"); }
 
             else return Redirect(@"\Contacts\Index");
         }

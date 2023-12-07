@@ -13,7 +13,7 @@ namespace PhoneBook.Data
     {
         private readonly IRequestLogin _login;
 
-        private readonly Uri baseAddress = new Uri("https://a22574-8749.k.d-f.pw/");
+        private readonly Uri baseAddress = new Uri("https://a22611-1ae3.k.d-f.pw/");
 
         public ContactDataApi(IRequestLogin login) 
         {
@@ -119,9 +119,9 @@ namespace PhoneBook.Data
         /// <param name="contact"></param>
         /// <returns>IContact - измененный контакт в случае успешного соединения
         /// NullContact - в случае не поладок в соединении</returns>
-        public async Task<(IContact, HttpStatusCode)> UpdateContact(int id, IContact contact)
+        public async Task<HttpStatusCode> UpdateContact(int id, IContact contact)
         {
-            if (!_login.IsToken) return (NullContact.Create(), HttpStatusCode.Unauthorized);
+            if (!_login.IsToken) return HttpStatusCode.Unauthorized;
 
             try
             {
@@ -140,28 +140,22 @@ namespace PhoneBook.Data
                     content: new StringContent(serelizeContact, Encoding.UTF8,
                     mediaType: "application/json"));
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string jsonContact = await response.Content.ReadAsStringAsync();
+                    if (response.IsSuccessStatusCode) { return  response.StatusCode; }
 
-                        IContact returnContact = JsonConvert.DeserializeObject<IContact>(jsonContact);
-
-                        return (returnContact, response.StatusCode);
-                    }
-                    else { return (NullContact.Create(), response.StatusCode); }
+                    else { return response.StatusCode; }
                 }
             }
 
             catch (HttpRequestException http) 
             {
                 Debug.WriteLine(http.Message);
-                return (NullContact.Create(), HttpStatusCode.NotFound);
+                return HttpStatusCode.NotFound;
             }
 
             catch (Exception ex) 
             {
                 Debug.WriteLine(ex.Message);
-                return (NullContact.Create(), HttpStatusCode.NotFound);
+                return  HttpStatusCode.NotFound;
             }
            
         }
