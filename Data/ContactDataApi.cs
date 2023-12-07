@@ -101,6 +101,11 @@ namespace PhoneBook.Data
                     else { return (NullContact.Create(), response.StatusCode); }
                 }
             }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine("\nException Caught!");
+                return (NullContact.Create(), HttpStatusCode.NotFound);
+            }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
