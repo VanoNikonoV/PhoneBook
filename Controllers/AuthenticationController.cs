@@ -44,8 +44,8 @@ namespace PhoneBook.Controllers
         [HttpPost]
         public async Task<IActionResult> RegisterAsync(User user)
         {
-           if (user.Password == user.ConfirmPassword) 
-           {
+            if(ModelState.IsValid)
+            {
                 HttpStatusCode httpStatusCode = await _context.Register(user);
 
                 if (httpStatusCode == HttpStatusCode.OK)
@@ -53,8 +53,9 @@ namespace PhoneBook.Controllers
                     return Redirect("~/Authentication/Login");
                 }
                 else { return Problem(httpStatusCode.ToString()); }
-           }
-           return View();
+
+            }
+            return View(user);
         }
 
         public IActionResult Logout() 

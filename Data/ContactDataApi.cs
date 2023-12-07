@@ -170,9 +170,9 @@ namespace PhoneBook.Data
         /// Добавляет контакт в базу данных, используя web API
         /// </summary>
         /// <param name="newContact"></param>
-        public async Task<(IContact, HttpStatusCode)> CreateContact(IContact newContact)
+        public async Task<HttpStatusCode> CreateContact(IContact newContact)
         {
-            if(!_login.IsToken) return (NullContact.Create(), HttpStatusCode.Unauthorized);
+            if(!_login.IsToken) return HttpStatusCode.Unauthorized;
 
             try
             {
@@ -193,26 +193,22 @@ namespace PhoneBook.Data
 
                     if (response.IsSuccessStatusCode)
                     {
-                        string jsonContact = await response.Content.ReadAsStringAsync();
-
-                        IContact returnContact = JsonConvert.DeserializeObject<IContact>(jsonContact);
-
-                        return (returnContact, response.StatusCode);
+                        return response.StatusCode;
                     }
-                    else { return (NullContact.Create(), response.StatusCode); }
+                    else { return response.StatusCode; }
                 }
             }
 
             catch (HttpRequestException http)
             {
                 Debug.WriteLine(http.Message);
-                return (NullContact.Create(), HttpStatusCode.NotFound);
+                return  HttpStatusCode.NotFound;
             }
 
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
-                return (NullContact.Create(), HttpStatusCode.NotFound);
+                return HttpStatusCode.NotFound;
             }
 
         }

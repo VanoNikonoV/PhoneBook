@@ -77,22 +77,17 @@ namespace PhoneBook.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] Contact contact)
         {
-            var tuple = await _context.CreateContact(contact);
-            IContact returnContact = tuple.Item1;
-            HttpStatusCode statusCode = tuple.Item2;
+            if (ModelState.IsValid)
+            {
+                HttpStatusCode statusCode = await _context.CreateContact(contact);
 
-            if (statusCode == HttpStatusCode.OK) { return View(returnContact); }
-            if (contact == null || statusCode == HttpStatusCode.NotFound) { return NotFound(); }
-            if (statusCode == HttpStatusCode.Unauthorized) { return RedirectToAction(nameof(NotAuthentication)); }
-            return RedirectToAction(nameof(Index));
+                if (statusCode == HttpStatusCode.OK) { return RedirectToAction(nameof(Index)); }
+                if (contact == null || statusCode == HttpStatusCode.NotFound) { return NotFound(); }
+                if (statusCode == HttpStatusCode.Unauthorized) { return RedirectToAction(nameof(NotAuthentication)); }
 
-            //if (ModelState.IsValid)
-            //{
-            //    _context.CreateContact(contact);
-
-            //    return RedirectToAction(nameof(Index));
-            //}
-            //return View(contact);
+                return RedirectToAction(nameof(Index));
+            }
+            return View(contact);
         }
 
         /// <summary>

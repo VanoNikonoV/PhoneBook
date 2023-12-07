@@ -28,6 +28,7 @@ namespace PhoneBook.Models
 
         [Display(Name = "Повоторите пароль")]
         [DataType(DataType.Password)]
+        [Compare("Password", ErrorMessage = "Пароли не совпадают")]
         [Required(ErrorMessage = "Не заполенено поле повоторите пароль")]
         public string ConfirmPassword {  get; set; } = string.Empty;
     }
