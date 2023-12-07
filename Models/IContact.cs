@@ -15,8 +15,8 @@ namespace PhoneBook.Models
         /// Имя
         /// </summary>
         [Display(Name = "Имя")]
-        [RegularExpression(@"^[а-яА-Я''-'\s]{1,30}$", ErrorMessage = "Имя не корретно")]
-        [Required(ErrorMessage = "Не указано имя")]
+        //[RegularExpression(@"^[а-яА-Я''-'\s]{1,30}$", ErrorMessage = "Имя не корретно")]
+        //[Required(ErrorMessage = "Не указано имя")]
         [JsonProperty("firstName")]
         string FirstName { get; set; }
 
@@ -24,8 +24,8 @@ namespace PhoneBook.Models
         /// Отчество
         /// </summary>
         [Display(Name = "Отчество")]
-        [RegularExpression(@"^[а-яА-Я''-'\s]{1,30}$")]
-        [Required(ErrorMessage = "Не указано отчество")]
+        //[RegularExpression(@"^[а-яА-Я''-'\s]{1,30}$")]
+        //[Required(ErrorMessage = "Не указано отчество")]
         [JsonProperty("middleName")]
         string MiddleName { get; set; }
 

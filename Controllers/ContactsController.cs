@@ -4,16 +4,22 @@ using Microsoft.EntityFrameworkCore;
 using PhoneBook.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using System.Net;
+using FluentValidation;
+using System;
+using FluentValidation.Results;
+using FluentValidation.AspNetCore;
 
 namespace PhoneBook.Controllers
 {
     public class ContactsController : Controller
     {
         private readonly IContactData _context;
+        private IValidator<Contact> _validator;
 
-        public ContactsController(IContactData context)
+        public ContactsController(IContactData context, IValidator<Contact> validator)
         {
-            _context = context; 
+            _context = context;
+            _validator = validator;
         }
 
         /// <summary>
@@ -34,7 +40,7 @@ namespace PhoneBook.Controllers
                 }
                 return View(contactFiltr);
             }
-            catch (Exception ex)  { return Problem(ex.Message); }
+            catch (Exception ex) { return Problem(ex.Message); }
         }
 
         /// <summary>
@@ -67,7 +73,7 @@ namespace PhoneBook.Controllers
         /// </summary>
         /// <returns>IActionResult</returns>
         public IActionResult Create() => View();
- 
+
         /// <summary>
         /// Метод-POST для валидации данных и добавления контакта в базу данных
         /// В случае ошибок в модели - вернет ту же страницу
@@ -75,9 +81,17 @@ namespace PhoneBook.Controllers
         /// <param name="contact">модель данных</param>
         /// <returns>Task<IActionResult></returns>
         [HttpPost]
-        public async Task<IActionResult> Create([Bind("Id,FirstName,MiddleName,LastName,Telefon,Address,Description")] Contact contact)
+        public async Task<IActionResult> Create(Contact contact)
         {
-            if (ModelState.IsValid)
+            ValidationResult result = await _validator.ValidateAsync(contact);
+
+            if (!result.IsValid)
+            {
+                result.AddToModelState(this.ModelState);
+
+                return View(contact);
+            }
+            else
             {
                 HttpStatusCode statusCode = await _context.CreateContact(contact);
 
@@ -87,7 +101,7 @@ namespace PhoneBook.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
-            return View(contact);
+            
         }
 
         /// <summary>

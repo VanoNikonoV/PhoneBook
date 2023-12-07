@@ -1,6 +1,9 @@
+using FluentValidation.AspNetCore;
+using FluentValidation;
 using PhoneBook.Data;
 using PhoneBook.Interfaces;
 using PhoneBook.Models;
+using System;
 
 /*
 Что нужно сделать
@@ -25,11 +28,11 @@ builder.Services.AddTransient<IContactData, ContactDataApi>();
 
 builder.Services.AddTransient<IAuthenticationData, AuthenticationDataApi>();
 
-builder.Services.AddSingleton<IRequestLogin, RequestLogin>();
+builder.Services.AddSingleton<IRequestLogin, RequestLogin>(); 
+
+builder.Services.AddScoped<IValidator<Contact>, ContactValidator>();
 
 builder.Services.AddControllersWithViews();
-
-//________________________________________________________________________________________
 
 var app = builder.Build();
 
