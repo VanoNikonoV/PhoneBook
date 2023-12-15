@@ -7,8 +7,9 @@ using System.Net;
 
 namespace PhoneBook.Data
 {
-    //https://v2.d-f.pw/app/create-application
-
+    /// <summary>
+    /// Класс посредник с web-Api. Отвечающий за основные операция с данными: чтение, запись ....
+    /// </summary>
     public class ContactDataApi : IContactData
     {
         private readonly IRequestLogin _login;
